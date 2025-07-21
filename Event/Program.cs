@@ -22,12 +22,12 @@ class Program
 
     public class Supermarket
     {
-        public event PromoEventHandler Promo;
+        public event PromoEventHandler? Promo;
 
         public void UmumkanPromo(string promo, int harga)
         {
             Console.WriteLine($"📢 Supermarket sedang promo: {promo} menjadi harga Rp {harga}! Dapatkan segera !!");
-            Promo?.Invoke(promo, harga);
+            Promo?.Invoke(this, promo, harga);
         }
     }
 
