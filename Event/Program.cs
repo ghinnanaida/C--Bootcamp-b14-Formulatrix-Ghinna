@@ -99,10 +99,15 @@ class Program
     {
         public event EventHandler<PromoEventArgs>? Promo2;
 
+        protected virtual void OnPromo(string promo, int harga)
+        {
+            Promo2?.Invoke(this, new PromoEventArgs(promo, harga));
+        }
+
         public void UmumkanPromo(string promo, int harga)
         {
             Console.WriteLine($"📢 Supermarket sedang promo: {promo} menjadi harga Rp {harga}! Dapatkan segera !!");
-            Promo2?.Invoke(this, new PromoEventArgs(promo, harga));
+            OnPromo(promo, harga);
         }
 
         public void BersihkanEvent()
