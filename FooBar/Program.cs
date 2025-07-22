@@ -87,7 +87,7 @@ class Program
 
     static void FooBarJazzUseListGenerics()
     {
-        throw new NotImplementedException("ntar implementnya, dah kebayang tapi masih bingung nulisnya")
+        throw new NotImplementedException("ntar implementnya, dah kebayang tapi masih bingung nulisnya");
     }
 }
 
