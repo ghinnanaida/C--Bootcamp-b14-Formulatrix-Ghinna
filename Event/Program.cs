@@ -115,6 +115,5 @@ class Program
             Promo2 = null; //ini ga kepake karna diprogram ini object short-lived dan ga static, tapi kalo dicase static, atau aplikasi berjalan terus menerus better kasih = null
         }
     }
-
      
 }
