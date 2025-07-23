@@ -1,24 +1,24 @@
 ﻿// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
-Console.WriteLine("Ini Ghinna");
+// Console.WriteLine("Hello, World!");
+// Console.WriteLine("Ini Ghinna");
 
-void FooBar(int num)
-{
-    for (int i = 1; i <= num; i++)
-    {
-        // if (i % 3 == 0 && i % 5 == 0)
-        if (i % 15 == 0)
-            Console.Write("foobar");
-        else if (i % 3 == 0)
-            Console.Write("foo");
-        else if (i % 5 == 0)
-            Console.Write("bar");
-        else
-            Console.Write(i);
-        if (i != num)
-            Console.Write(", ");
-    }
-}
+// void FooBar(int num)
+// {
+//     for (int i = 1; i <= num; i++)
+//     {
+//         // if (i % 3 == 0 && i % 5 == 0)
+//         if (i % 15 == 0)
+//             Console.Write("foobar");
+//         else if (i % 3 == 0)
+//             Console.Write("foo");
+//         else if (i % 5 == 0)
+//             Console.Write("bar");
+//         else
+//             Console.Write(i);
+//         if (i != num)
+//             Console.Write(", ");
+//     }
+// }
 
 // FooBar(35);
 
@@ -92,20 +92,25 @@ void FooBar(int num)
 
 // public class Point { public int X, Y; }
 
-Lingkaran l = new Lingkaran();
-l.jariJari = 10;
-Console.WriteLine(l.jariJari);
-Console.WriteLine(l.HitungLuas());
-public abstract class Bentuk
-{
-    public abstract double HitungLuas();
-}
+// Lingkaran l = new Lingkaran();
+// l.jariJari = 10;
+// Console.WriteLine(l.jariJari);
+// Console.WriteLine(l.HitungLuas());
+// public abstract class Bentuk
+// {
+//     public abstract double HitungLuas();
+// }
 
-public class Lingkaran : Bentuk
-{
-    public double jariJari;
-    public override double HitungLuas()
-    {
-        return Math.PI * jariJari * jariJari;
-    }
-}
+// public class Lingkaran : Bentuk
+// {
+//     public double jariJari;
+//     public override double HitungLuas()
+//     {
+//         return Math.PI * jariJari * jariJari;
+//     }
+// }
+
+string nullString = null;
+Console.WriteLine(nullString == null);    // True
+Console.WriteLine(nullString == "");      // False
+Console.WriteLine(nullString.Length);
