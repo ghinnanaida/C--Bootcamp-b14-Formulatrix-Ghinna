@@ -1,0 +1,217 @@
+classDiagram
+    direction D
+
+    %% ENUMS
+    class BonusSquareType {
+        <<Enumeration>>
+        Normal
+        DoubleLetter
+        TripleLetter
+        DoubleWord
+        TripleWord
+    }
+
+    class TurnActionType {
+        <<Enumeration>>
+        PlaceWord
+        SwapTiles
+        SkipTurn
+        ShuffleRack
+        QuitGame
+    }
+
+    class Direction {
+        <<Enumeration>>
+        Horizontal
+        Vertical
+    }
+
+    %% DELEGATES
+    class RequestBlankTileChar {
+        <<delegates>>
+        +char Invoke(Tile blankTile)
+    }
+    class ValidateWord {
+        <<delegates>>
+        +bool Invoke(string word)
+    }
+
+    %% INTERFACES
+    class IDictionaryValidator {
+        <<interface>>
+        +IsValidWord(string word) : bool
+    }
+    class IBoardDisplayable {
+        <<interface>>
+        +DisplayBoard() : void
+    }
+    class ITileSource {
+        <<interface>>
+        +DrawTiles(int count) : List<Tile>
+        +ReturnTiles(List<Tile> tiles) : void
+        +GetRemainingCount() : int
+    }
+
+    %% CORE GAME CLASSES
+    class GameControl {
+        -List<Player> _players
+        -int _activePlayerIndex
+        -Board _gameBoard
+        -ITileSource _tileBag
+        -IDictionaryValidator _dictionaryValidator
+        -Stopwatch _turnTimer
+        -Dictionary<Player, TimeSpan> _totalTimeRemaining
+        -Dictionary<string, int> _tilePointsDistribution
+        -Dictionary<string, int> _tileCountDistribution
+
+        +RequestBlankTileChar OnRequestBlankTileChar
+        +ValidateWord OnValidateWord
+
+        +GameControl(IDictionaryValidator dictionaryValidator, ITileSource tileSource, Dictionary<string, int> countDistribution, Dictionary<string, int> pointsDistribution)
+        +StartGame()
+        +NextTurn()
+        +GetCurrentPlayer() : Player
+        +GetBoard() : Board
+        +PerformTurn(Player player, List<TilePlacement> placements) : int
+        +SwapTiles(Player player, List<Tile> tilesToSwap) : bool
+        +SkipTurn(Player player) : bool
+        +CheckTimeExpired(Player player) : bool
+        +EndGame()
+        -StartTurnTimer()
+        -StopTurnTimer()
+        -CalculateWordScore(List<string> formedWords, List<TilePlacement> newPlacements) : int
+        -IsPlacementValid(Player player, List<TilePlacement> placements) : bool
+    }
+
+    class Player {
+        -string _name
+        -int _score
+        -List<Tile> _rack
+
+        +Player(string name)
+        +GetName() : string
+        +GetScore() : int
+        +GetRack() : List<Tile>
+        +AddScore(int points)
+        +AddTile(List<Tile> tiles)
+        +RemoveTiles(List<Tile> tiles) : List<Tile>
+        +ShuffleRack() : void
+    }
+
+    class Tile {
+        -string _letterRepresentation
+        -int _points
+        -bool _isBlank
+
+        +Tile(string letterRepresentation, int points, bool isBlank)
+        +GetLetterRepresentation() : string
+        +GetPoints() : int
+        +IsBlank() : bool
+        +SetLetterRepresentation(string letterRepresentation)
+    }
+
+    class TileBag {
+        -List<Tile> _tiles
+        -Random _random
+
+        +TileBag(Dictionary<string, int> countDistribution, Dictionary<string, int> pointsDistribution)
+        +DrawTiles(int count) : List<Tile>
+        +ReturnTiles(List<Tile> tiles) : void
+        +GetRemainingCount() : int
+    }
+
+    class Board {
+        -Square[,] _grid
+        -const int BOARD_SIZE = 15
+
+        +Board()
+        +PlaceTile(Tile tile, int x, int y) : bool
+        +GetSquare(int x, int y) : Square
+        +IsSquareEmpty(int x, int y) : bool
+        +GetHorizontalWordFromBoard(int row, int col) : string
+        +GetVerticalWordFromBoard(int row, int col) : string
+        +GetAllFormedWords(List<TilePlacement> newPlacements) : List<string>
+        -FindHorizontalWordStart(int row, int col) : int
+        -FindVerticalWordStart(int row, int col) : int
+        +DisplayBoard()
+    }
+
+    class Square {
+        -int _x
+        -int _y
+        -BonusSquareType _bonusType
+        -Tile _currentTile
+
+        +Square(int x, int y, BonusSquareType bonusType)
+        +GetX() : int
+        +GetY() : int
+        +GetBonusType() : BonusSquareType
+        +GetTile() : Tile
+        +SetTile(Tile tile)
+        +IsEmpty() : bool
+    }
+
+    class DictionaryValidator {
+        -HashSet<string> _wordList
+
+        +DictionaryValidator(string dictionaryFilePath)
+        +IsValidWord(string word) : bool
+    }
+
+    %% UI CLASS
+    class ConsoleGameUI {
+        -GameControl _gameControl
+        -IBoardDisplayable _boardDisplay
+        -Func<string, List<Tile>> _getTilesFromRack
+
+        +ConsoleGameUI(GameControl gameControl, IBoardDisplayable boardDisplay)
+        +StartGameLoop() : void
+        -DisplayGameStatus(Player activePlayer) : void
+        -DisplayActionMenu() : TurnActionType
+        -GetPlacementInput(Player player, out Direction direction) : List<TilePlacement>
+        -HandleSwapAction(Player player) : void
+        -HandleSkipAction(Player player) : void
+        -HandleShuffleAction(Player player) : void
+        -PromptForBlankTileChar(Tile blankTile) : char
+    }
+
+    %% HELPER CLASSES (TilePlacement diubah menjadi struct)
+    class TilePlacement {
+        -Tile _tile
+        -int _x
+        -int _y
+
+        +TilePlacement(Tile tile, int x, int y)
+        +GetTile() : Tile
+        +GetX() : int
+        +GetY() : int
+    }
+
+    TilePlacement <|-- struct
+
+    %% RELATIONSHIPS
+    GameControl "1" o-- "*" Player : manages
+    GameControl "1" *-- "1" Board : has
+    GameControl "1" --> "1" ITileSource : uses
+    GameControl "1" --> "1" IDictionaryValidator : uses
+
+    Player "1" -- "*" Tile : has in rack
+    ITileSource <|-- TileBag : implements
+    Board "1" -- "*" Square : consists of
+    Square "1" -- "0..1" Tile : can contain
+
+    Square --> BonusSquareType : has
+    IDictionaryValidator <|-- DictionaryValidator : implements
+    Board --|> IBoardDisplayable : implements
+
+    ConsoleGameUI "1" -- "1" GameControl : uses
+    ConsoleGameUI "1" -- "1" IBoardDisplayable : uses for display
+    ConsoleGameUI --> TurnActionType : uses
+    ConsoleGameUI --> Direction : uses
+    TilePlacement --> Tile : holds
+
+    %% Delegate relationships
+    GameControl ..> RequestBlankTileChar : triggers event
+    GameControl ..> ValidateWord : triggers event
+    ConsoleGameUI ..> RequestBlankTileChar : implements handler for
+    ConsoleGameUI ..> ValidateWord : uses (via OnValidateWord)
