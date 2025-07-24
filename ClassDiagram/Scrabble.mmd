@@ -16,8 +16,9 @@ classDiagram
         PlaceWord
         SwapTiles
         SkipTurn
-        ShowHelp
-        QuitGame
+        %% ShowHelp
+        ShuffleTiles
+        QuitGame %%Resign
     }
 
     class Direction {
@@ -40,31 +41,31 @@ classDiagram
         GameAlreadyStarted
     }
 
-    %% DELEGATES
-    class RequestBlankTileChar {
-        <<delegate>>
-        +char Invoke(Tile blankTile)
-    }
+    %% %% DELEGATES
+    %% class RequestBlankTileChar {
+    %%     <<delegate>>
+    %%     +char Invoke(Tile blankTile)
+    %% }
     
-    class ValidateWord {
-        <<delegate>>
-        +bool Invoke(string word)
-    }
+    %% class ValidateWord {
+    %%     <<delegate>>
+    %%     +bool Invoke(string word)
+    %% }
     
-    class DisplayMessage {
-        <<delegate>>
-        +void Invoke(string message)
-    }
+    %% class DisplayMessage {
+    %%     <<delegate>>
+    %%     +void Invoke(string message)
+    %% }
     
-    class ConfirmAction {
-        <<delegate>>
-        +bool Invoke(string prompt)
-    }
+    %% class ConfirmAction {
+    %%     <<delegate>>
+    %%     +bool Invoke(string prompt)
+    %% }
     
-    class NotifyGameEvent {
-        <<delegate>>
-        +void Invoke(string eventType, object eventData)
-    }
+    %% class NotifyGameEvent {
+    %%     <<delegate>>
+    %%     +void Invoke(string eventType, object eventData)
+    %% }
     
     class GetUserInput {
         <<delegate>>
@@ -72,12 +73,12 @@ classDiagram
     }
 
     %% INTERFACES
-    class IDictionaryValidator {
+    class IDictionary {
         <<interface>>
         +IsValidWord(string word) : bool
     }
 
-    class ITileSource {
+    class ITileBag {
         <<interface>>
         +DrawTiles(int count) : List~Tile~
         +ReturnTiles(List~Tile~ tiles) : void
@@ -90,27 +91,32 @@ classDiagram
         -int _activePlayerIndex
         -Board _gameBoard
         -ITileSource _tileBag
-        -IDictionaryValidator _dictionaryValidator
+        -IDictionary _dictionary
         -bool _gameEnded
         -bool _gameStarted
-        -bool _isFirstMove
+        %% -bool _isFirstMove
         -int _consecutiveSkips
         -List~string~ _lastFormedWords
-        -Player _winner
+        %% -Player _winner
         -const int MIN_PLAYERS = 2
         -const int MAX_PLAYERS = 4
 
-        +RequestBlankTileChar OnRequestBlankTileChar
-        +ValidateWord OnValidateWord
-        +DisplayMessage OnDisplayMessage
-        +ConfirmAction OnConfirmAction
-        +NotifyGameEvent OnGameEvent
+        +Action<.Tile blankTile>? OnRequestBlankTileChar
+        +Action<.string word>? OnValidateWord
+        +Action<.string message>? OnDisplayMessage
+        +Action<.string prompt>? OnConfirmAction
+        +Action<.string eventType, object eventData>? OnGameEvent
+        %% +RequestBlankTileChar OnRequestBlankTileChar
+        %% +ValidateWord OnValidateWord
+        %% +DisplayMessage OnDisplayMessage
+        %% +ConfirmAction OnConfirmAction
+        %% +NotifyGameEvent OnGameEvent
 
-        +GameControl(IDictionaryValidator validator, ITileSource tileSource)
+        +GameControl(IDictionary dictionary, ITileBag tileBag)
         +AddPlayer(string playerName) : bool
         +RemovePlayer(string playerName) : bool
-        +GetPlayerCount() : int
-        +CanStartGame() : bool
+        %% +GetPlayerCount() : int
+        %% +CanStartGame() : bool
         +StartGame() : bool
         +GetCurrentPlayer() : Player
         +GetAllPlayers() : List~Player~
@@ -119,19 +125,19 @@ classDiagram
         +SwapTiles(Player player, List~Tile~ tilesToSwap) : bool
         +SkipTurn(Player player) : bool
         +IsGameOver() : bool
-        +GetWinner() : Player
+        %% +GetWinner() : Player
         +GetLastFormedWords() : List~string~
         +NextTurn() : void
-        -RefillPlayerRack(Player player) : void
-        -CalculateWordScore(List~string~ words, List~TilePlacement~ placements) : int
-        -IsPlacementValid(List~TilePlacement~ placements) : bool
-        -IsValidFirstMove(List~TilePlacement~ placements) : bool
-        -AreConsecutivePlacements(List~TilePlacement~ placements) : bool
-        -ConnectsToExistingTiles(List~TilePlacement~ placements) : bool
-        -CheckEndGameConditions() : void
-        -CalculateFinalScores() : void
-        -ValidatePlayerCount() : bool
-        -IsPlayerNameUnique(string name) : bool
+        +RefillPlayerRack(Player player) : void
+        +CalculateWordScore(List~string~ words, List~TilePlacement~ placements) : int
+        +IsPlacementValid(List~TilePlacement~ placements) : bool
+        +IsValidFirstMove(List~TilePlacement~ placements) : bool
+        +AreConsecutivePlacements(List~TilePlacement~ placements) : bool
+        +ConnectsToExistingTiles(List~TilePlacement~ placements) : bool
+        %% +CheckEndGameConditions() : void
+        +CalculateFinalScores() : void
+        +ValidatePlayerCount() : bool
+        %% +IsPlayerNameUnique(string name) : bool
     }
 
     class Player {
@@ -173,7 +179,7 @@ classDiagram
         +DrawTiles(int count) : List~Tile~
         +ReturnTiles(List~Tile~ tiles) : void
         +GetRemainingCount() : int
-        -InitializeStandardTiles() : void
+        +InitializeStandardTiles() : void
     }
 
     class Board {
@@ -193,8 +199,8 @@ classDiagram
         +GetAllFormedWords(List~TilePlacement~ placements) : List~string~
         +GetAdjacentOccupiedSquares(int x, int y) : List~Square~
         +DisplayBoard() : void
-        -InitializeBonusSquares() : void
-        -FindWordStart(int row, int col, Direction direction) : int
+        +InitializeBonusSquares() : void
+        +FindWordStart(int row, int col, Direction direction) : int
     }
 
     class Square {
@@ -213,12 +219,12 @@ classDiagram
         +HasTile() : bool
     }
 
-    class DictionaryValidator {
-        -HashSet~string~ _wordList
+    class Dictionary {
+        -List~string~ _wordList
 
         +DictionaryValidator(string dictionaryFilePath)
         +IsValidWord(string word) : bool
-        -LoadDictionary(string filePath) : void
+        +LoadDictionary(string filePath) : void
     }
 
     %% UI CLASS
@@ -241,13 +247,13 @@ classDiagram
         +PromptForBlankTileChar(Tile blankTile) : char
         +GetPlayerName(int playerNumber) : string
         +ConfirmPlayerSetup(List~Player~ players) : bool
-        -ParseCoordinates(string input) : int[]
-        -ParseDirection(string input) : Direction
-        -ParseTiles(string input, List~Tile~ rack) : List~Tile~
-        -IsValidInput(string input) : bool
-        -DisplayError(string message) : void
-        -ClearScreen() : void
-        -ValidatePlayerName(string name) : bool
+        +ParseCoordinates(string input) : int[]
+        +ParseDirection(string input) : Direction
+        +ParseTiles(string input, List~Tile~ rack) : List~Tile~
+        +IsValidInput(string input) : bool
+        +DisplayError(string message) : void
+        +ClearScreen() : void
+        +ValidatePlayerName(string name) : bool
     }
 
     %% HELPER CLASSES
@@ -263,13 +269,13 @@ classDiagram
         +GetY() : int
     }
 
-    class GameStats {
+    class GameControl {
         -int _turnsPlayed
         -int _totalWordsFormed
         -string _highestScoringWord
         -int _highestWordScore
 
-        +GameStats()
+        %% +GameStats()
         +IncrementTurns() : void
         +AddWordsFormed(int count) : void
         +UpdateHighestWord(string word, int score) : void
@@ -285,19 +291,19 @@ classDiagram
     GameControl "1" o-- "*" Player : manages
     GameControl "1" *-- "1" Board : has
     GameControl "1" *-- "1" GameStats : tracks
-    GameControl "1" --> ITileSource : uses
-    GameControl "1" --> IDictionaryValidator : uses
-    GameControl ..> RequestBlankTileChar : uses delegate
-    GameControl ..> ValidateWord : uses delegate
-    GameControl ..> DisplayMessage : uses delegate
-    GameControl ..> ConfirmAction : uses delegate
-    GameControl ..> NotifyGameEvent : uses delegate
+    GameControl "1" --> ITileBag : uses
+    GameControl "1" --> IDictionary : uses
+    %% GameControl ..> RequestBlankTileChar : uses delegate
+    %% GameControl ..> ValidateWord : uses delegate
+    %% GameControl ..> DisplayMessage : uses delegate
+    %% GameControl ..> ConfirmAction : uses delegate
+    %% GameControl ..> NotifyGameEvent : uses delegate
 
     %% Player Relationships
     Player "1" *-- "*" Tile : has in rack
 
     %% TileBag Relationships
-    ITileSource <|.. TileBag : implements
+    ITileBag <|.. TileBag : implements
     TileBag "1" *-- "*" Tile : contains
 
     %% Board Relationships
@@ -309,19 +315,23 @@ classDiagram
     Square --> BonusSquareType : has
 
     %% DictionaryValidator Relationships
-    IDictionaryValidator <|.. DictionaryValidator : implements
+    IDictionary <|.. Dictionary : implements
 
     %% ConsoleGameUI Relationships
     ConsoleGameUI "1" --> "1" GameControl : controls
-    ConsoleGameUI --> TurnActionType : uses
-    ConsoleGameUI --> Direction : uses
-    ConsoleGameUI --> MoveError : handles
-    ConsoleGameUI ..> RequestBlankTileChar : implements handler
-    ConsoleGameUI ..> ValidateWord : implements handler
-    ConsoleGameUI ..> DisplayMessage : implements handler
-    ConsoleGameUI ..> ConfirmAction : implements handler
-    ConsoleGameUI ..> NotifyGameEvent : implements handler
-    ConsoleGameUI ..> GetUserInput : uses delegate
+    GameControl --> TurnActionType : uses
+    GameControl --> Direction : uses
+    GameControl --> MoveError : handles
+    %% ConsoleGameUI --> TurnActionType : uses
+    %% ConsoleGameUI --> Direction : uses
+    %% ConsoleGameUI --> MoveError : handles
+    %% ConsoleGameUI ..> RequestBlankTileChar : implements handler
+    %% ConsoleGameUI ..> ValidateWord : implements handler
+    %% ConsoleGameUI ..> DisplayMessage : implements handler
+    %% ConsoleGameUI ..> ConfirmAction : implements handler
+    %% ConsoleGameUI ..> NotifyGameEvent : implements handler
+    %% ConsoleGameUI ..> GetUserInput : uses delegate
+    GameControl ..> GetUserInput : uses delegate
 
     %% TilePlacement Relationships
     TilePlacement --> Tile : holds
