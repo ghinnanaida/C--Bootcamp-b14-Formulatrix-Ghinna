@@ -16,9 +16,8 @@ classDiagram
         PlaceWord
         SwapTiles
         SkipTurn
-        %% ShowHelp
         ShuffleTiles
-        QuitGame %%Resign
+        QuitGame
     }
 
     class Direction {
@@ -39,37 +38,8 @@ classDiagram
         TooManyPlayers
         DuplicatePlayerName
         GameAlreadyStarted
-    }
-
-    %% %% DELEGATES
-    %% class RequestBlankTileChar {
-    %%     <<delegate>>
-    %%     +char Invoke(Tile blankTile)
-    %% }
-    
-    %% class ValidateWord {
-    %%     <<delegate>>
-    %%     +bool Invoke(string word)
-    %% }
-    
-    %% class DisplayMessage {
-    %%     <<delegate>>
-    %%     +void Invoke(string message)
-    %% }
-    
-    %% class ConfirmAction {
-    %%     <<delegate>>
-    %%     +bool Invoke(string prompt)
-    %% }
-    
-    %% class NotifyGameEvent {
-    %%     <<delegate>>
-    %%     +void Invoke(string eventType, object eventData)
-    %% }
-    
-    class GetUserInput {
-        <<delegate>>
-        +string Invoke(string prompt)
+        InvalidTilesToSwap
+        TooManyTilesToSwap
     }
 
     %% INTERFACES
@@ -85,59 +55,78 @@ classDiagram
         +GetRemainingCount() : int
     }
 
+    class IPlayer {
+        <<interface>>
+        +GetName() : string
+        +GetScore() : int
+        +GetRack() : List~Tile~
+        +AddScore(int points) : void
+        +AddTiles(List~Tile~ tiles) : void
+        +RemoveTiles(List~Tile~ tiles) : bool
+        +HasTile(Tile tile) : bool
+        +GetRackSize() : int
+        +GetRemainingTilePoints() : int
+    }
+
+    class IBoard {
+        <<interface>>
+        +PlaceTile(Tile tile, int x, int y) : bool
+        +GetSquare(int x, int y) : Square
+        +IsSquareEmpty(int x, int y) : bool
+        +HasTileAt(int x, int y) : bool
+        +IsValidCoordinate(int x, int y) : bool
+        +GetHorizontalWord(int row, int col) : string
+        +GetVerticalWord(int row, int col) : string
+        +GetAllFormedWords(List~TilePlacement~ placements) : List~string~
+        +GetAdjacentOccupiedSquares(int x, int y) : List~Square~
+        +FindWordStart(int row, int col, Direction direction) : int
+        +GetTilesOnBoard() : List~TilePlacement~
+    }
+
     %% CORE GAME CLASSES
     class GameControl {
-        -List~Player~ _players
+        -List~IPlayer~ _players
         -int _activePlayerIndex
-        -Board _gameBoard
-        -ITileSource _tileBag
+        -IBoard _gameBoard
+        -ITileBag _tileBag
         -IDictionary _dictionary
+        -GameStats _gameStats
         -bool _gameEnded
         -bool _gameStarted
-        %% -bool _isFirstMove
         -int _consecutiveSkips
-        -List~string~ _lastFormedWords
-        %% -Player _winner
+        -IPlayer _winner %% Kept as discussed
         -const int MIN_PLAYERS = 2
         -const int MAX_PLAYERS = 4
 
-        +Action<.Tile blankTile>? OnRequestBlankTileChar
-        +Action<.string word>? OnValidateWord
-        +Action<.string message>? OnDisplayMessage
-        +Action<.string prompt>? OnConfirmAction
-        +Action<.string eventType, object eventData>? OnGameEvent
-        %% +RequestBlankTileChar OnRequestBlankTileChar
-        %% +ValidateWord OnValidateWord
-        %% +DisplayMessage OnDisplayMessage
-        %% +ConfirmAction OnConfirmAction
-        %% +NotifyGameEvent OnGameEvent
+        %% Events using Action/Func delegates
+        +event Func~Tile, char~ OnRequestBlankTileChar
+        +event Action~string~ OnDisplayMessage
+        +event Func~string, bool~ OnConfirmAction
+        +event Action~string, object~ OnGameEvent
+        +event Func~string, string~ OnGetUserInput
 
-        +GameControl(IDictionary dictionary, ITileBag tileBag)
-        +AddPlayer(string playerName) : bool
+        +GameControl(IDictionary dictionary, ITileBag tileBag, IBoard board)
+        +AddPlayer(IPlayer player) : bool
         +RemovePlayer(string playerName) : bool
-        %% +GetPlayerCount() : int
-        %% +CanStartGame() : bool
         +StartGame() : bool
-        +GetCurrentPlayer() : Player
-        +GetAllPlayers() : List~Player~
-        +GetBoard() : Board
-        +PerformTurn(Player player, List~TilePlacement~ placements) : int
-        +SwapTiles(Player player, List~Tile~ tilesToSwap) : bool
-        +SkipTurn(Player player) : bool
+        +GetCurrentPlayer() : IPlayer
+        +GetAllPlayers() : List~IPlayer~
+        +PerformTurn(IPlayer player, List~TilePlacement~ placements) : MoveError
+        +SwapTiles(IPlayer player, List~Tile~ tilesToSwap) : MoveError
+        +SkipTurn(IPlayer player) : MoveError
         +IsGameOver() : bool
-        %% +GetWinner() : Player
-        +GetLastFormedWords() : List~string~
+        +GetLastFormedWords() : List~string~ %% Kept for now, can be removed if really not needed
         +NextTurn() : void
-        +RefillPlayerRack(Player player) : void
+        +RefillPlayerRack(IPlayer player) : void
         +CalculateWordScore(List~string~ words, List~TilePlacement~ placements) : int
-        +IsPlacementValid(List~TilePlacement~ placements) : bool
+        +IsPlacementValid(List~TilePlacement~ placements) : MoveError
         +IsValidFirstMove(List~TilePlacement~ placements) : bool
         +AreConsecutivePlacements(List~TilePlacement~ placements) : bool
         +ConnectsToExistingTiles(List~TilePlacement~ placements) : bool
-        %% +CheckEndGameConditions() : void
+        +CheckEndGameConditions() : void
         +CalculateFinalScores() : void
         +ValidatePlayerCount() : bool
-        %% +IsPlayerNameUnique(string name) : bool
+        +IsPlayerNameUnique(string name) : bool
     }
 
     class Player {
@@ -157,17 +146,18 @@ classDiagram
         +GetRackSize() : int
         +GetRemainingTilePoints() : int
     }
+    IPlayer <|.. Player : implements
 
     class Tile {
-        -string _letterRepresentation
+        -char _letter
         -int _points
         -bool _isBlank
 
-        +Tile(string letter, int points, bool isBlank)
-        +GetLetter() : string
+        +Tile(char letter, int points, bool isBlank)
+        +GetLetter() : char
         +GetPoints() : int
         +IsBlank() : bool
-        +SetLetter(string letter) : void
+        +SetLetter(char letter) : void
         +ToString() : string
     }
 
@@ -181,6 +171,7 @@ classDiagram
         +GetRemainingCount() : int
         +InitializeStandardTiles() : void
     }
+    ITileBag <|.. TileBag : implements
 
     class Board {
         -Square[,] _grid
@@ -192,16 +183,16 @@ classDiagram
         +GetSquare(int x, int y) : Square
         +IsSquareEmpty(int x, int y) : bool
         +HasTileAt(int x, int y) : bool
-        +IsFirstMove() : bool
         +IsValidCoordinate(int x, int y) : bool
         +GetHorizontalWord(int row, int col) : string
         +GetVerticalWord(int row, int col) : string
         +GetAllFormedWords(List~TilePlacement~ placements) : List~string~
         +GetAdjacentOccupiedSquares(int x, int y) : List~Square~
-        +DisplayBoard() : void
-        +InitializeBonusSquares() : void
         +FindWordStart(int row, int col, Direction direction) : int
+        +GetTilesOnBoard() : List~TilePlacement~
+        +InitializeBonusSquares() : void
     }
+    IBoard <|.. Board : implements
 
     class Square {
         -int _x
@@ -219,34 +210,33 @@ classDiagram
         +HasTile() : bool
     }
 
-    class Dictionary {
-        -List~string~ _wordList
+    class Dictionary { %% Renamed from DictionaryValidator
+        -HashSet~string~ _wordSet
 
-        +DictionaryValidator(string dictionaryFilePath)
+        +Dictionary(string dictionaryFilePath)
         +IsValidWord(string word) : bool
-        +LoadDictionary(string filePath) : void
+        -LoadDictionary(string filePath) : void
     }
+    IDictionary <|.. Dictionary : implements
 
-    %% UI CLASS
+    %% UI CLASS (As a conceptual subscriber, not directly in core diagram relationships)
     class ConsoleGameUI {
-        -GameControl _gameControl
-        -GetUserInput _getUserInput
-
+        -GameControl _gameControl %% Holds reference to GameControl
+        %% Methods to handle UI specific logic, including subscribing to GameControl's events
         +ConsoleGameUI(GameControl gameControl)
-        +SetupPlayers() : void
         +StartGameLoop() : void
-        +DisplayGameState(Player currentPlayer) : void
-        +DisplayBoard() : void
-        +DisplayPlayerInfo(Player player) : void
-        +DisplayAllPlayerScores() : void
+        +DisplayGameState(IPlayer currentPlayer, IBoard board) : void %% Updated to use interfaces
+        +DisplayBoard(List~TilePlacement~ tilesOnBoard) : void %% Receives board state from IBoard.GetTilesOnBoard()
+        +DisplayPlayerInfo(IPlayer player) : void
+        +DisplayAllPlayerScores(List~IPlayer~ players) : void
         +GetPlayerAction() : TurnActionType
-        +GetPlacementInput(Player player) : List~TilePlacement~
-        +GetSwapTilesInput(Player player) : List~Tile~
+        +GetPlacementInput(IPlayer player) : List~TilePlacement~
+        +GetSwapTilesInput(IPlayer player) : List~Tile~
         +ShowHelp() : void
-        +DisplayEndGame(Player winner, List~Player~ allPlayers) : void
+        +DisplayEndGame(IPlayer winner, List~IPlayer~ allPlayers) : void
         +PromptForBlankTileChar(Tile blankTile) : char
         +GetPlayerName(int playerNumber) : string
-        +ConfirmPlayerSetup(List~Player~ players) : bool
+        +ConfirmPlayerSetup(List~IPlayer~ players) : bool
         +ParseCoordinates(string input) : int[]
         +ParseDirection(string input) : Direction
         +ParseTiles(string input, List~Tile~ rack) : List~Tile~
@@ -254,6 +244,12 @@ classDiagram
         +DisplayError(string message) : void
         +ClearScreen() : void
         +ValidatePlayerName(string name) : bool
+        %% Event handlers that subscribe to GameControl's events
+        -HandleDisplayMessage(string msg) : void
+        -HandleRequestBlankTileChar(Tile blankTile) : char
+        -HandleConfirmAction(string prompt) : bool
+        -HandleGameEvent(string eventType, object eventData) : void
+        -HandleGetUserInput(string prompt) : string
     }
 
     %% HELPER CLASSES
@@ -269,13 +265,13 @@ classDiagram
         +GetY() : int
     }
 
-    class GameControl {
+    class GameStats {
         -int _turnsPlayed
         -int _totalWordsFormed
         -string _highestScoringWord
         -int _highestWordScore
 
-        %% +GameStats()
+        +GameStats()
         +IncrementTurns() : void
         +AddWordsFormed(int count) : void
         +UpdateHighestWord(string word, int score) : void
@@ -288,22 +284,22 @@ classDiagram
     %% RELATIONSHIPS
     
     %% GameControl Relationships
-    GameControl "1" o-- "*" Player : manages
-    GameControl "1" *-- "1" Board : has
+    GameControl "1" o-- "*" IPlayer : manages
+    GameControl "1" *-- "1" IBoard : uses
     GameControl "1" *-- "1" GameStats : tracks
     GameControl "1" --> ITileBag : uses
     GameControl "1" --> IDictionary : uses
-    %% GameControl ..> RequestBlankTileChar : uses delegate
-    %% GameControl ..> ValidateWord : uses delegate
-    %% GameControl ..> DisplayMessage : uses delegate
-    %% GameControl ..> ConfirmAction : uses delegate
-    %% GameControl ..> NotifyGameEvent : uses delegate
+
+    %% Interface Implementations
+    IPlayer <|.. Player
+    ITileBag <|.. TileBag
+    IBoard <|.. Board
+    IDictionary <|.. Dictionary
 
     %% Player Relationships
     Player "1" *-- "*" Tile : has in rack
 
     %% TileBag Relationships
-    ITileBag <|.. TileBag : implements
     TileBag "1" *-- "*" Tile : contains
 
     %% Board Relationships
@@ -314,24 +310,13 @@ classDiagram
     Square "1" o-- "0..1" Tile : can contain
     Square --> BonusSquareType : has
 
-    %% DictionaryValidator Relationships
-    IDictionary <|.. Dictionary : implements
-
-    %% ConsoleGameUI Relationships
-    ConsoleGameUI "1" --> "1" GameControl : controls
-    GameControl --> TurnActionType : uses
-    GameControl --> Direction : uses
-    GameControl --> MoveError : handles
-    %% ConsoleGameUI --> TurnActionType : uses
-    %% ConsoleGameUI --> Direction : uses
-    %% ConsoleGameUI --> MoveError : handles
-    %% ConsoleGameUI ..> RequestBlankTileChar : implements handler
-    %% ConsoleGameUI ..> ValidateWord : implements handler
-    %% ConsoleGameUI ..> DisplayMessage : implements handler
-    %% ConsoleGameUI ..> ConfirmAction : implements handler
-    %% ConsoleGameUI ..> NotifyGameEvent : implements handler
-    %% ConsoleGameUI ..> GetUserInput : uses delegate
-    GameControl ..> GetUserInput : uses delegate
-
     %% TilePlacement Relationships
     TilePlacement --> Tile : holds
+
+    %% Conceptual UI Interaction (not a direct association in core logic)
+    ConsoleGameUI ..> GameControl : subscribes to events
+    ConsoleGameUI --> IBoard : requests board state (via GameControl's IBoard or directly if passed)
+    ConsoleGameUI --> IPlayer : requests player info (via GameControl's IPlayers or directly if passed)
+    ConsoleGameUI --> TurnActionType : uses
+    ConsoleGameUI --> MoveError : uses
+    ConsoleGameUI --> Direction : uses
