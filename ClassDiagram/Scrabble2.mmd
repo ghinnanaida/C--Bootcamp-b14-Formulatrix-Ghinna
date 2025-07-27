@@ -16,8 +16,8 @@ classDiagram
         PlaceWord
         SwapTiles
         SkipTurn
-        ShuffleTiles
         QuitGame
+        ShuffleTiles
     }
 
     class Direction {
@@ -42,16 +42,22 @@ classDiagram
         TooManyTilesToSwap
     }
 
+    class GameState {
+        <<Enumeration>>
+        NotStarted
+        InProgress
+        Ended
+    }
+
     %% INTERFACES
     class IDictionary {
         <<interface>>
-        +IsValidWord(string word) : bool
+        +GetWordSet() : HashSet~string~
     }
 
     class ITileBag {
         <<interface>>
-        +DrawTiles(int count) : List~Tile~
-        +ReturnTiles(List~Tile~ tiles) : void
+        +GetTiles() : List~Tile~
         +GetRemainingCount() : int
     }
 
@@ -61,25 +67,13 @@ classDiagram
         +GetScore() : int
         +GetRack() : List~Tile~
         +AddScore(int points) : void
-        +AddTiles(List~Tile~ tiles) : void
-        +RemoveTiles(List~Tile~ tiles) : bool
-        +HasTile(Tile tile) : bool
-        +GetRackSize() : int
-        +GetRemainingTilePoints() : int
     }
 
     class IBoard {
         <<interface>>
-        +PlaceTile(Tile tile, int x, int y) : bool
+        +GetGrid() : Square[,]
         +GetSquare(int x, int y) : Square
-        +IsSquareEmpty(int x, int y) : bool
-        +IsValidCoordinate(int x, int y) : bool
-        +GetHorizontalWord(int row, int col) : string
-        +GetVerticalWord(int row, int col) : string
-        +GetAllFormedWords(List~TilePlacement~ placements) : List~string~
-        +GetAdjacentOccupiedSquares(int x, int y) : List~Square~
-        +FindWordStart(int row, int col, Direction direction) : int
-        +GetTilesOnBoard() : List~TilePlacement~
+        +InitializeBonusSquares() : void
     }
 
     %% CORE GAME CLASSES
@@ -89,17 +83,10 @@ classDiagram
         -IBoard _gameBoard
         -ITileBag _tileBag
         -IDictionary _dictionary
-        -bool _gameEnded
-        -bool _gameStarted
+        -GameState _currentState 
         -int _consecutiveSkips
-        -IPlayer _winner
         -const int MIN_PLAYERS = 2
         -const int MAX_PLAYERS = 4
-        %% Game Stats integrated
-        -int _turnsPlayed
-        -int _totalWordsFormed
-        -string _highestScoringWord
-        -int _highestWordScore
 
         +event Func~Tile, char~ OnRequestBlankTileChar
         +event Action~string~ OnDisplayMessage
@@ -113,59 +100,60 @@ classDiagram
         +StartGame() : bool
         +GetCurrentPlayer() : IPlayer
         +GetAllPlayers() : List~IPlayer~
+        +GetWinner() : IPlayer
+
         +PerformTurn(IPlayer player, List~TilePlacement~ placements) : MoveError
         +SwapTiles(IPlayer player, List~Tile~ tilesToSwap) : MoveError
         +SkipTurn(IPlayer player) : MoveError
-        +IsGameOver() : bool
         +GetLastFormedWords() : List~string~
         +NextTurn() : void
         +RefillPlayerRack(IPlayer player) : void
+
         +CalculateWordScore(List~string~ words, List~TilePlacement~ placements) : int
         +IsPlacementValid(List~TilePlacement~ placements) : MoveError
         +IsValidFirstMove(List~TilePlacement~ placements) : bool
         +AreConsecutivePlacements(List~TilePlacement~ placements) : bool
         +ConnectsToExistingTiles(List~TilePlacement~ placements) : bool
-        +CheckEndGameConditions() : void
-        +CalculateFinalScores() : void
+        +GetWordFromBoard(int row, int col, Direction direction) : string
+        +GetAllWordsFromPlacement(List~TilePlacement~ placements) : List~string~
+        +CheckTileInPlayerRack(IPlayer player, Tile tile) : bool
+        +IsWordInDictionary(string word) : bool
+        +PlaceTileOnBoard(Tile tile, int x, y) : bool
+        +DrawTilesFromBag(int count) : List~Tile~
+        +ReturnTilesToBag(List~Tile~ tiles) : void
+        +FindWordStartOnBoard(int row, col, Direction direction) : int
+        +IsCoordinateValid(int x, y) : bool
+        +IsSquareEmptyOnBoard(int x, y) : bool
+        +IsTileBlank(Tile tile) : bool
+
+        +CheckEndGameConditions() : void 
         +ValidatePlayerCount() : bool
         +IsPlayerNameUnique(string name) : bool
-        +IncrementTurns() : void
-        +AddWordsFormed(int count) : void
-        +UpdateHighestWord(string word, int score) : void
-        +GetTurnsPlayed() : int
-        +GetTotalWords() : int
-        +GetHighestWord() : string
-        +GetHighestScore() : int
+
+        +ParsePlayerInputToTilePlacement(string rawInput, IPlayer player) : TilePlacement
     }
 
     class Player {
         -string _name
         -int _score
         -List~Tile~ _rack
-        -const int MAX_RACK_SIZE = 7
 
         +Player(string name)
         +GetName() : string
         +GetScore() : int
         +GetRack() : List~Tile~
         +AddScore(int points) : void
-        +AddTiles(List~Tile~ tiles) : void
-        +RemoveTiles(List~Tile~ tiles) : bool
-        +HasTile(Tile tile) : bool
-        +GetRackSize() : int
-        +GetRemainingTilePoints() : int
     }
     IPlayer <|.. Player : implements
 
     class Tile {
         -char _letter
         -int _points
-        -bool _isBlank
+        -bool _isBlank_internal_property
 
-        +Tile(char letter, int points, bool isBlank)
+        +Tile(char letter, int points)
         +GetLetter() : char
         +GetPoints() : int
-        +IsBlank() : bool
         +SetLetter(char letter) : void
         +ToString() : string
     }
@@ -175,8 +163,7 @@ classDiagram
         -Random _random
 
         +TileBag()
-        +DrawTiles(int count) : List~Tile~
-        +ReturnTiles(List~Tile~ tiles) : void
+        +GetTiles() : List~Tile~
         +GetRemainingCount() : int
         +InitializeStandardTiles() : void
     }
@@ -188,16 +175,8 @@ classDiagram
         -const int CENTER_POSITION = 7
 
         +Board()
-        +PlaceTile(Tile tile, int x, int y) : bool
-        +GetSquare(int x, int y) : Square
-        +IsSquareEmpty(int x, int y) : bool
-        +IsValidCoordinate(int x, int y) : bool
-        +GetHorizontalWord(int row, int col) : string
-        +GetVerticalWord(int row, int col) : string
-        +GetAllFormedWords(List~TilePlacement~ placements) : List~string~
-        +GetAdjacentOccupiedSquares(int x, int y) : List~Square~
-        +FindWordStart(int row, int col, Direction direction) : int
-        +GetTilesOnBoard() : List~TilePlacement~
+        +GetGrid() : Square[,]
+        +GetSquare(int x, y) : Square
         +InitializeBonusSquares() : void
     }
     IBoard <|.. Board : implements
@@ -208,20 +187,19 @@ classDiagram
         -BonusSquareType _bonusType
         -Tile _currentTile
 
-        +Square(int x, int y, BonusSquareType bonusType)
+        +Square(int x, y, BonusSquareType bonusType)
         +GetX() : int
         +GetY() : int
         +GetBonusType() : BonusSquareType
         +GetTile() : Tile
         +SetTile(Tile tile) : void
-        +IsEmpty() : bool
     }
 
     class Dictionary {
         -HashSet~string~ _wordSet
 
         +Dictionary(string dictionaryFilePath)
-        +IsValidWord(string word) : bool
+        +GetWordSet() : HashSet~string~
         -LoadDictionary(string filePath) : void
     }
     IDictionary <|.. Dictionary : implements
@@ -233,7 +211,7 @@ classDiagram
         -int _x
         -int _y
 
-        +TilePlacement(Tile tile, int x, int y)
+        +TilePlacement(Tile tile, int x, y)
         +GetTile() : Tile
         +GetX() : int
         +GetY() : int
@@ -246,6 +224,9 @@ classDiagram
     GameControl "1" --> IDictionary : uses
     GameControl --> MoveError : uses
     GameControl --> TurnActionType : uses
+    GameControl --> Direction : uses
+    GameControl "1" *-- "*" TilePlacement : creates and uses
+    GameControl --> GameState : has a state
 
     IPlayer <|.. Player
     ITileBag <|.. TileBag
@@ -255,7 +236,7 @@ classDiagram
     Player "1" *-- "*" Tile : has in rack
     TileBag "1" *-- "*" Tile : contains
     Board "1" *-- "*" Square : consists of
-    Board --> Direction : uses
     Square "1" o-- "0..1" Tile : can contain
     Square --> BonusSquareType : has
-    TilePlacement --> Tile : holds
+
+    TilePlacement "1" *-- "1" Tile : holds
