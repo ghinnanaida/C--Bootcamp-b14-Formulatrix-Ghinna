@@ -60,6 +60,8 @@ classDiagram
         <<interface>>
         +GetTiles() : List~Tile~
         +GetRemainingCount() : int
+        +SetTiles(List~TIle~) : void
+        +SetRemainingCount() : void
         +InitializeStandardTiles() : void
     }
 
@@ -68,6 +70,8 @@ classDiagram
         +GetName() : string
         +GetScore() : int
         +GetRack() : List~Tile~
+        +SetName(string name) : void
+        +SetScore(int score) : void
         +AddScore(int points) : void
     }
 
@@ -75,6 +79,8 @@ classDiagram
         <<interface>>
         +GetGrid() : Square[,]
         +GetSquare(int x, int y) : Square
+        +SetGrid(Square[,]) : void
+        +SetSquare(int x, int y) : void
         +InitializeBonusSquares() : void
     }
 
