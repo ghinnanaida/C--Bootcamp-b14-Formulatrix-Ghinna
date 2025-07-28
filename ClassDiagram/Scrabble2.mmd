@@ -186,6 +186,7 @@ classDiagram
         -int _y
         -BonusSquareType _bonusType
         -Tile _currentTile
+        -bool _isBonusUsed
 
         +Square(int x, y, BonusSquareType bonusType)
         +GetX() : int
@@ -193,6 +194,7 @@ classDiagram
         +GetBonusType() : BonusSquareType
         +GetTile() : Tile
         +SetTile(Tile tile) : void
+        +SetBonusUsed(bool status) : void
     }
 
     class Dictionary {
