@@ -11,14 +11,14 @@ classDiagram
         TripleWord
     }
 
-    class TurnActionType {
-        <<Enumeration>>
-        PlaceWord
-        SwapTiles
-        SkipTurn
-        QuitGame
-        ShuffleTiles
-    }
+    %% class TurnActionType {
+    %%     <<Enumeration>>
+    %%     PlaceWord
+    %%     SwapTiles
+    %%     SkipTurn
+    %%     QuitGame
+    %%     ShuffleTiles
+    %% }
 
     class Direction {
         <<Enumeration>>
@@ -53,12 +53,14 @@ classDiagram
     class IDictionary {
         <<interface>>
         +GetWordSet() : HashSet~string~
+        +LoadDictionary() : void
     }
 
     class ITileBag {
         <<interface>>
         +GetTiles() : List~Tile~
         +GetRemainingCount() : int
+        +InitializeStandardTiles() : void
     }
 
     class IPlayer {
@@ -149,7 +151,6 @@ classDiagram
     class Tile {
         -char _letter
         -int _points
-        -bool _isBlank_internal_property
 
         +Tile(char letter, int points)
         +GetLetter() : char
@@ -186,15 +187,16 @@ classDiagram
         -int _y
         -BonusSquareType _bonusType
         -Tile _currentTile
-        -bool _isBonusUsed
+        -bool _isBonusSquareTypeUsed
 
         +Square(int x, y, BonusSquareType bonusType)
         +GetX() : int
         +GetY() : int
         +GetBonusType() : BonusSquareType
         +GetTile() : Tile
+        +GetIsBonusSquareTypeUsed() : IsBonusSquareTypeUsed
         +SetTile(Tile tile) : void
-        +SetBonusUsed(bool status) : void
+        +SetBonusSquareTypeUsed(bool status) : void
     }
 
     class Dictionary {
@@ -225,7 +227,7 @@ classDiagram
     GameControl "1" --> ITileBag : uses
     GameControl "1" --> IDictionary : uses
     GameControl --> MoveError : uses
-    GameControl --> TurnActionType : uses
+    %% GameControl --> TurnActionType : uses
     GameControl --> Direction : uses
     GameControl "1" *-- "*" TilePlacement : creates and uses
     GameControl --> GameState : has a state
