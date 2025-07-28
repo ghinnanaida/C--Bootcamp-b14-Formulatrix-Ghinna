@@ -81,6 +81,7 @@ classDiagram
     %% CORE GAME CLASSES
     class GameControl {
         -List~IPlayer~ _players
+        -Dictionary~IPlayer, List<.Tile>~ _playerRacks
         -int _activePlayerIndex
         -IBoard _gameBoard
         -ITileBag _tileBag
@@ -109,7 +110,7 @@ classDiagram
         +SkipTurn(IPlayer player) : MoveError
         +GetLastFormedWords() : List~string~
         +NextTurn() : void
-        +RefillPlayerRack(IPlayer player) : void
+        +RefillPlayerRack(Dictionary~IPlayer, List<.Tile>~ playerRacks) : void
 
         +CalculateWordScore(List~string~ words, List~TilePlacement~ placements) : int
         +IsPlacementValid(List~TilePlacement~ placements) : MoveError
@@ -138,12 +139,14 @@ classDiagram
     class Player {
         -string _name
         -int _score
-        -List~Tile~ _rack
+        %% -List~Tile~ _rack
 
         +Player(string name)
         +GetName() : string
         +GetScore() : int
-        +GetRack() : List~Tile~
+        %% +GetRack() : List~Tile~
+        +SetName(string name) : void
+        +SetScore(int score) : void
         +AddScore(int points) : void
     }
     IPlayer <|.. Player : implements
@@ -156,6 +159,7 @@ classDiagram
         +GetLetter() : char
         +GetPoints() : int
         +SetLetter(char letter) : void
+        +SetPoint(int points) : void
         +ToString() : string
     }
 
@@ -166,6 +170,8 @@ classDiagram
         +TileBag()
         +GetTiles() : List~Tile~
         +GetRemainingCount() : int
+        +SetTiles(List~Tile~) : void
+        +SetRemainingCount() : void
         +InitializeStandardTiles() : void
     }
     ITileBag <|.. TileBag : implements
@@ -178,6 +184,8 @@ classDiagram
         +Board()
         +GetGrid() : Square[,]
         +GetSquare(int x, y) : Square
+        +SetGrid(Square[,]) : void
+        +SetSquare(Square) : void
         +InitializeBonusSquares() : void
     }
     IBoard <|.. Board : implements
@@ -187,16 +195,19 @@ classDiagram
         -int _y
         -BonusSquareType _bonusType
         -Tile _currentTile
-        -bool _isBonusSquareTypeUsed
+        -bool _isBonusSquareUsed
 
         +Square(int x, y, BonusSquareType bonusType)
         +GetX() : int
         +GetY() : int
         +GetBonusType() : BonusSquareType
         +GetTile() : Tile
-        +GetIsBonusSquareTypeUsed() : IsBonusSquareTypeUsed
+        +GetBonusSquareUsed() : bool
         +SetTile(Tile tile) : void
-        +SetBonusSquareTypeUsed(bool status) : void
+        +SetX(int x) : void
+        +SetY(int y) : void
+        +SetBonusType(BonusSquareType) : void
+        +SetBonusSquareUsed(bool status) : void
     }
 
     class Dictionary {
@@ -227,7 +238,6 @@ classDiagram
     GameControl "1" --> ITileBag : uses
     GameControl "1" --> IDictionary : uses
     GameControl --> MoveError : uses
-    %% GameControl --> TurnActionType : uses
     GameControl --> Direction : uses
     GameControl "1" *-- "*" TilePlacement : creates and uses
     GameControl --> GameState : has a state
