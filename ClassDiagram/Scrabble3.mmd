@@ -80,7 +80,7 @@ classDiagram
     %% CORE GAME CLASSES
     class GameControl {
         -List~IPlayer~ _players
-        -Dictionary~IPlayer, List~Tile~>~ _playerRacks
+        -Dictionary~IPlayer, List<.Tile>~ _playerRacks
         -int _activePlayerIndex
         -IBoard _gameBoard
         -ITileBag _tileBag
