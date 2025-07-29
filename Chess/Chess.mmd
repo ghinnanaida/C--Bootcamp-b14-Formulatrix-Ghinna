@@ -1,0 +1,160 @@
+classDiagram
+
+class ColorType {
+    Black
+    White
+}
+<<enumeration>> ColorType
+
+class PieceState {
+    Active
+    Captured
+    Promoted
+}
+<<enumeration>> PieceState
+
+class GameState {
+    Init
+    IntendingMove
+    MakingMove
+    CheckmateBlackWin
+    CheckmateWhiteWin
+    Stalemate
+    Resignation
+}
+<<enumeration>> GameState
+
+class PieceType {
+    Pawn
+    Rook
+    Bishop
+    Queen
+    King
+    Knight
+}
+<<enumeration>> PieceType
+
+class Point {
+    +int X
+    +int Y
+}
+<<recordstruct>> Point
+
+class IBoard {
+    +GetSquare(Point coordinate) : ISquare square
+    +SetSquare(Point coordinate, IPiece? piece) : void
+}
+<<interface>> IBoard
+
+class IPiece {
+    +GetColor() : ColorType color
+    +GetState() : PieceState state
+    +GetType() : PieceType type
+    +SetState(PieceState state) : void
+    +GetInitialCoordinate() : Point coordinate
+}
+<<interface>> IPiece
+
+class ISquare {
+    +GetPosition() : Point coordinate
+    +GetPiece() : IPiece piece
+    +SetPiece(IPiece? piece) : void
+}
+<<interface>> ISquare
+
+class IPlayer {
+    +GetColor() : ColorType
+    +GetMoveCountNoCaptureNoPromotion() : uint
+    +SetMoveCountNoCaptureNoPromotion(uint increment) : void
+}
+<<interface>> IPlayer
+
+class Player {
+    +ColorType Color
+    +uint MoveCountNoCaptureNoPromotion
+    +Player(ColorType color)
+    +GetColor() : ColorType
+    +GetMoveCountNoCaptureNoPromotion() : uint
+    +SetMoveCountNoCaptureNoPromotion(uint counter) : void
+}
+
+class GameController {
+    +List<.IPlayer> Players
+    %% +Dictionary<.IPlayer, List<.IPiece>> players changename
+    +Dictionary<.IPlayer, List<.IPiece>> PlayerPieces
+    +IBoard Board
+    +GameState State
+    -int _currentPlayerIndex
+    -ISquare? _intendedSquareSource
+    +List<.ISquare>? CurrentLegalMoves
+    +GameController()
+    +InitGame() : void
+    +NextTurn() : void
+    +IntendMove(ISquare sourceSquare) : void
+    +GetLegalMoves() : List<.ISquare>
+    +CancelMove() : void
+    +MakeMove(ISquare destinationSquare) : bool
+    +Action? OnMoveDone
+    +HandleMoveDone() : void
+    +Action<.IPiece>? OnCapturePiece
+    +HandleCapturePiece(IPiece capturedPiece) : void
+    +Action<.IPiece>? OnCastling
+    +HandleCastling(IPiece rook) : void
+    +Action<.IPiece>? OnEnPassant
+    +HandleEnPassant(IPiece capturedPawn) : void
+    +Action<.IPiece>? OnPawnPromotion
+    %% +HandlePawnPromotion(IPiece pawn) editttt
+    +HandlePawnPromotion(IPiece pawn) : void
+    +Action? OnCheckmate
+    +Action? OnResign
+    +Action? OnStalemate
+    +HandleCheckmate() : void
+    +HandleResign(int resignedPlayerIndex) : void
+    +HandleStalemate() : void
+}
+
+class Board {
+    +ISquare[,] squares
+    +Board()
+    +GetSquare(Point coordinate) : ISquare square
+    +SetSquare(Point coordinate, IPiece? piece) : void
+}
+
+class Square {
+    +Point coordinate
+    +IPiece? piece
+    +Square(Point coordinate)
+    +GetPosition() : Point coordinate
+    +GetPiece() : IPiece piece
+    +SetPiece(IPiece? piece) : void
+}
+
+class Piece {
+    +ColorType Color : readonly
+    +PieceState State : readonly
+    +PieceType Type : readonly
+    +Point InitialCoordinate : readonly
+    +Piece(ColorType color, PieceState state, PieceType type)
+    +GetColor() : ColorType color
+    +GetState() : PieceState state
+    +GetType() : PieceType type
+    +GetInitialCoordinate() : Point coordinate
+    +SetState(PieceState state) : void
+}
+
+Board *-- ISquare
+GameController *-- IPiece
+GameController *-- IBoard
+GameController *-- IPlayer
+GameController o-- GameState
+IBoard <|-- Board
+IPiece <|.. Piece
+ISquare <|.. Square
+IPlayer <|.. Player
+Piece o-- Point
+Piece o-- PieceState
+Piece o-- PieceType
+Piece o-- ColorType
+Player o-- ColorType
+Square -- Piece
+Square o-- Point
