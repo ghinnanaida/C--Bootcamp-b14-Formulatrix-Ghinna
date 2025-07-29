@@ -43,19 +43,16 @@ classDiagram
     %% INTERFACES
     class IDictionary {
         <<interface>>
-        +GetAllWords() : HashSet~string~ 
-        +SetAllWords(HashSet~string~ words) : void 
+        +GetAllWords() : HashSet~string~
+        +SetAllWords(HashSet~string~ words) : void
         +LoadDictionary() : void
     }
 
     class ITileBag {
         <<interface>>
-        +GetTilesInternalList() : List~Tile~
-        +GetRemainingCount() : int
-        +SetRemainingCount(int count) : void
+        +GetTilesList() : List~Tile~
         +InitializeStandardTiles() : void
-        +SetTilesInternalList(List~Tile~ tiles) : void
-        +SetRandom(Random random) : void 
+        +SetTilesList(List~Tile~ tiles) : void
     }
 
     class IPlayer {
@@ -79,7 +76,7 @@ classDiagram
     %% CORE GAME CLASSES
     class GameControl {
         -List~IPlayer~ _players
-        -Dictionary~IPlayer, List~Tile~>~ _playerRacks
+        -Dictionary~IPlayer, List<.Tile>~ _playerRacks
         -int _activePlayerIndex
         -IBoard _gameBoard
         -ITileBag _tileBag
@@ -88,6 +85,8 @@ classDiagram
         -int _consecutiveSkips
         -const int MIN_PLAYERS = 2
         -const int MAX_PLAYERS = 4
+        -HashSet~Tuple~int, int~>~ _usedBonusSquaresThisTurn
+        -Random _randomGenerator
 
         +event Func~Tile, char~ OnRequestBlankTileChar
         +event Action~string~ OnDisplayMessage
@@ -106,7 +105,6 @@ classDiagram
         +PerformTurn(IPlayer player, List~TilePlacement~ placements) : MoveError
         +SwapTiles(IPlayer player, List~Tile~ tilesToSwap) : MoveError
         +SkipTurn(IPlayer player) : MoveError
-        +GetLastFormedWords() : List~string~
         +NextTurn() : void
         +RefillPlayerRack(IPlayer player) : void
 
@@ -120,12 +118,14 @@ classDiagram
         +CheckTileInPlayerRack(IPlayer player, Tile tile) : bool
         +IsWordInDictionary(string word) : bool
         +PlaceTileOnBoard(Tile tile, int x, y) : bool
-        +DrawTilesFromBag(int count) : List~Tile~ 
-        +ReturnTilesToBag(List~Tile~ tiles) : void 
+        +DrawTilesFromBag(int count) : List~Tile~
+        +ReturnTilesToBag(List~Tile~ tiles) : void
         +FindWordStartOnBoard(int row, col, Direction direction) : int
         +IsCoordinateValid(int x, y) : bool
         +IsSquareEmptyOnBoard(int x, y) : bool
         +IsTileBlank(Tile tile) : bool
+        +MarkBonusSquareUsed(int x, int y) : void
+        +IsBonusSquarePreviouslyUsed(int x, int y) : bool
 
         +CheckEndGameConditions() : void 
         +ValidatePlayerCount() : bool
@@ -161,15 +161,12 @@ classDiagram
 
     class TileBag {
         -List~Tile~ _tiles
-        -Random _random
 
         +TileBag()
         +GetTilesList() : List~Tile~
-        +GetRemainingCount() : int
-        +SetRemainingCount(int count) : void
         +InitializeStandardTiles() : void
-        +SetTilesList(List~Tile~ tiles) : void 
-        +SetRandom(Random random) : void
+        +SetTilesList(List~Tile~ tiles) : void
+        
     }
     ITileBag <|.. TileBag : implements
 
@@ -183,7 +180,7 @@ classDiagram
         +GetSquare(int x, y) : Square
         +InitializeBonusSquares() : void
         +SetGrid(Square[,] grid) : void
-        +SetSquare(int x, int y, Square square) : void
+        +SetSquare(int x, y, Square square) : void
     }
     IBoard <|.. Board : implements
 
@@ -192,26 +189,23 @@ classDiagram
         -int _y
         -BonusSquareType _bonusType
         -Tile _currentTile
-        -bool _isBonusUsed
 
         +Square(int x, y, BonusSquareType bonusType)
         +GetX() : int
         +GetY() : int
         +GetBonusType() : BonusSquareType
         +GetTile() : Tile
-        +GetIsBonusSquareUsed() : bool
         +SetTile(Tile tile) : void
         +SetX(int x) : void
         +SetY(int y) : void
         +SetBonusType(BonusSquareType bonusType) : void
-        +SetIsBonusSquareUsed(bool status) : void
     }
 
     class Dictionary {
-        -HashSet~string~ _wordSet
+        -HashSet~string~ _allWord
 
         +Dictionary(string dictionaryFilePath)
-        +GetAllWords() : HashSet~string~ 
+        +GetAllWords() : HashSet~string~
         +SetAllWords(HashSet~string~ words) : void
         +LoadDictionary(string filePath) : void
     }
