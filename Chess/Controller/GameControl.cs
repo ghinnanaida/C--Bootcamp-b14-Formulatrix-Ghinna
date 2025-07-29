@@ -1,7 +1,7 @@
 namespace ChessGame
 {
     public class GameController
-    {
+    { 
         public List<IPlayer> Players;
         public Dictionary<IPlayer, List<IPiece>> PlayerPieces;
         public IBoard Board;
