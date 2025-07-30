@@ -5,11 +5,23 @@ namespace ChessGame.Models;
 
 public class Square : ISquare
 {
-    public Point Coordinate { get; set; }
-    public IPiece? Piece { get; set; }
-    public Square() { }
+    public Point Coordinate { get; private set; }
+    public IPiece? Piece { get; private set; }
+    public Square(Point initCoordinate)
+    {
+        this.Coordinate = initCoordinate;
+        this.Piece = null;
+    }
 
-    public Point GetPosition() => throw new NotImplementedException();
-    public IPiece GetPiece() => throw new NotImplementedException();
-    public void SetPieces(IPiece? piece) => throw new NotImplementedException();
+    public Point GetPosition() => this.Coordinate;
+    public void SetPosition(Point newCoordinate)
+    {
+        this.Coordinate = newCoordinate;
+    }
+
+    public IPiece? GetPiece() => this.Piece;
+    public void SetPieces(IPiece? newPiece)
+    {
+        this.Piece = newPiece;
+    }
 }

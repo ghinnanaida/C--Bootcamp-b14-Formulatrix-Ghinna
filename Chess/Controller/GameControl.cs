@@ -1,19 +1,21 @@
 using ChessGame.Enumerations;
 using ChessGame.Interfaces;
+using ChessGame.Models;
 
 namespace ChessGame
 {
-    public class GameController
+    public class GameControl
     {
-        public List<IPlayer> Players;
-        public Dictionary<IPlayer, List<IPiece>> PlayerPieces;
-        public IBoard Board;
-        public GameState State;
+        public List<IPlayer> Players{ get; private set;}
+        public Dictionary<IPlayer, List<IPiece>> PlayerPieces{ get; private set;}
+        public IBoard Board{ get; private set;}
+        public GameState State{ get; private set;}
 
         private int _currentPlayerIndex;
         private ISquare? _intendedSquareSource;
 
-        public List<ISquare>? CurrentLegalMoves;
+        public List<ISquare>? CurrentLegalMoves{ get; private set;}
+
         public event Action? OnMoveDone;
         public event Action<IPiece>? OnCapturePiece;
         public event Action<IPiece>? OnCastling;
@@ -22,7 +24,25 @@ namespace ChessGame
         public event Action? OnCheckmate;
         public event Action? OnResign;
         public event Action? OnStalemate;
-        public GameController() => throw new NotImplementedException();
+
+        public GameControl()
+        {
+            this.Players = new List<IPlayer>
+            {
+                new Player(ColorType.White),
+                new Player(ColorType.Black)
+            };
+            this.PlayerPieces = new Dictionary<IPlayer, List<IPiece>>()
+            {
+                {Players[0], new List<IPiece>() },
+                {Players[1], new List<IPiece>()}
+            };
+            this.Board = new Board();
+            this.State = GameState.Init;
+            this._currentPlayerIndex = 0;
+            this._intendedSquareSource = null;
+            this.CurrentLegalMoves = null;
+        }
 
         public void InitGame() => throw new NotImplementedException();
         public void NextTurn() => throw new NotImplementedException();

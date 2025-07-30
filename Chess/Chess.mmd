@@ -50,7 +50,10 @@ class IPiece {
     +GetColor() : ColorType color
     +GetState() : PieceState state
     +GetType() : PieceType type
-    +SetState(PieceState state) : void
+    +SetState(PieceState newstate) : void
+    +SetColor(ColorType newColor) : void
+    +SetType(PieceType newType) : void
+    +SetInitialCoordinate(Point newCoordinate) : void
     +GetInitialCoordinate() : Point coordinate
 }
 <<interface>> IPiece
@@ -59,11 +62,13 @@ class ISquare {
     +GetPosition() : Point coordinate
     +GetPiece() : IPiece piece
     +SetPiece(IPiece? piece) : void
+    +SetPosition(Point coordinate) : void
 }
 <<interface>> ISquare
 
 class IPlayer {
-    +GetColor() : ColorType
+    +GetColor() : ColorType color
+    +SetColor(ColorType newColor) : void
     +GetMoveCountNoCaptureNoPromotion() : uint
     +SetMoveCountNoCaptureNoPromotion(uint increment) : void
 }
@@ -74,6 +79,7 @@ class Player {
     +uint MoveCountNoCaptureNoPromotion
     +Player(ColorType color)
     +GetColor() : ColorType
+    +SetColor(ColorType newColor) : void
     +GetMoveCountNoCaptureNoPromotion() : uint
     +SetMoveCountNoCaptureNoPromotion(uint counter) : void
 }
@@ -125,6 +131,7 @@ class Square {
     +IPiece? piece
     +Square(Point coordinate)
     +GetPosition() : Point coordinate
+    +SetPosition(Point coordinate) : void
     +GetPiece() : IPiece piece
     +SetPiece(IPiece? piece) : void
 }

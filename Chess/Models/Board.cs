@@ -5,19 +5,33 @@ namespace ChessGame.Models;
 
 public class Board : IBoard
 {
-    public ISquare[,] Squares { get; set; }
+    public ISquare[,] Squares { get; private set; }
     public Board()
     {
-        throw new NotImplementedException();
+        this.Squares = new ISquare[8, 8];
+        for (int x = 0; x < 8; x++) {
+            for (int y = 0; y < 8; y++)
+            {
+                this.Squares[x, y] = new Square(new Point { X = x, Y = y });
+            }
+        }
     }
     public ISquare GetSquare(Point coordinate)
     {
-        throw new NotImplementedException();
+        if (coordinate.X < 0 || coordinate.X >= 8 || coordinate.Y < 0 || coordinate.Y >= 8)
+        {
+            throw new ArgumentOutOfRangeException(nameof(coordinate), "Coordinate is out of board bounds.");
+        }
+        return this.Squares[coordinate.X, coordinate.Y];
     }
 
     public void SetSquare(Point coordinate, IPiece? piece)
     {
-        throw new NotImplementedException();
+        if (coordinate.X < 0 || coordinate.X >= 8 || coordinate.Y < 0 || coordinate.Y >= 8)
+        {
+            throw new ArgumentOutOfRangeException(nameof(coordinate), "Coordinate is out of board bounds.");
+        }
+        this.Squares[coordinate.X, coordinate.Y].SetPieces(piece);
     }
 
 }

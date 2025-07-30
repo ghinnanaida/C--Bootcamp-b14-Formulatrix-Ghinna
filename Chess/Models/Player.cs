@@ -1,3 +1,4 @@
+using System.Reflection.Metadata.Ecma335;
 using ChessGame.Enumerations;
 using ChessGame.Interfaces;
 
@@ -5,11 +6,23 @@ namespace ChessGame.Models;
 
 public class Player : IPlayer
 {
-    public ColorType Color { get; set; }
-    public uint MoveCountNoCaptureNoPromotion { get; set; }
-    public Player() { }
+    public ColorType Color { get; private set; }
+    public uint MoveCountNoCaptureNoPromotion { get; private set; }
+    public Player(ColorType color)
+    {
+        this.Color = color;
+        this.MoveCountNoCaptureNoPromotion = 0;
+    }
 
-    public ColorType GetColor() => throw new NotImplementedException();
-    public uint GetMoveCountNoCaptureNoPromotion() => throw new NotImplementedException();
-    public void SetMoveCountNoCaptureNoPromotion(uint increment) => throw new NotImplementedException();
+    public ColorType GetColor() => this.Color;
+    public void SetColor(ColorType newColor)
+    {
+        this.Color = newColor;
+    }
+
+    public uint GetMoveCountNoCaptureNoPromotion() => this.MoveCountNoCaptureNoPromotion;
+    public void SetMoveCountNoCaptureNoPromotion(uint counter)
+    {
+        this.MoveCountNoCaptureNoPromotion = counter;
+    }
 }

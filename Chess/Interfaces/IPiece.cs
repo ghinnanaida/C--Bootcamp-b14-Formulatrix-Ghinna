@@ -9,5 +9,5 @@ public interface IPiece
     PieceState GetState();
     PieceType GetPieceType();
     Point GetInitialCoordinate();
-    void SetState(PieceState state);
+    void SetState(PieceState newState);
 }
