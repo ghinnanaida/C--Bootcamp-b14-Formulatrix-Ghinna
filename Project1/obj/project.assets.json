@@ -8,19 +8,19 @@
     "net8.0": []
   },
   "packageFolders": {
-    "C:\\Users\\ghinna\\.nuget\\packages\\": {}
+    "C:\\Users\\user\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Bootcamp-b14-C#\\Project1\\Project1.csproj",
+      "projectUniqueName": "D:\\Bootcamp-formulatrix\\C--Bootcamp-b14-Formulatrix-Ghinna\\Project1\\Project1.csproj",
       "projectName": "Project1",
-      "projectPath": "D:\\Bootcamp-b14-C#\\Project1\\Project1.csproj",
-      "packagesPath": "C:\\Users\\ghinna\\.nuget\\packages\\",
-      "outputPath": "D:\\Bootcamp-b14-C#\\Project1\\obj\\",
+      "projectPath": "D:\\Bootcamp-formulatrix\\C--Bootcamp-b14-Formulatrix-Ghinna\\Project1\\Project1.csproj",
+      "packagesPath": "C:\\Users\\user\\.nuget\\packages\\",
+      "outputPath": "D:\\Bootcamp-formulatrix\\C--Bootcamp-b14-Formulatrix-Ghinna\\Project1\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\ghinna\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\user\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
@@ -64,7 +64,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.408/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.412/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

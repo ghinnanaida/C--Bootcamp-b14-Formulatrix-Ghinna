@@ -194,53 +194,85 @@ namespace ChessGame
         // Renders the current state of the chess board to the console
         private void DisplayBoard()
         {
-            Console.Clear(); // Clear console for a fresh board view (optional, but good for dynamic display)
-            Console.WriteLine("\n    a b c d e f g h"); // Column headers
-            Console.WriteLine("   -----------------"); // Separator
-            for (int y = 7; y >= 0; y--) // Iterate from rank 8 (top) down to 1 (bottom)
+            Console.Clear();
+            Console.OutputEncoding = System.Text.Encoding.UTF8; // Ensure Unicode support
+            
+            Console.ForegroundColor = ConsoleColor.White; // Set text color for borders
+            Console.WriteLine("\n    a  b  c  d  e  f  g  h ");
+            Console.WriteLine("   -------------------------");
+
+            for (int y = 7; y >= 0; y--) // Iterate from rank 8 down to 1
             {
-                Console.Write($"{y + 1} | "); // Rank number
-                for (int x = 0; x < 8; x++) // Iterate from file a (left) to h (right)
+                Console.Write($"{y + 1} |");
+                for (int x = 0; x < 8; x++) // Iterate from file a to h
                 {
+                    // 1. Determine the background color for the square
+                    // Use a new combination for better contrast: Blue and Gray
+                    ConsoleColor backgroundColor = (x + y) % 2 == 0 ? ConsoleColor.Blue : ConsoleColor.Gray;
+                    Console.BackgroundColor = backgroundColor;
+
+                    // 2. Get the piece and its character
                     ISquare square = _gameControl.Board.GetSquare(new Point { X = x, Y = y });
                     IPiece? piece = square.GetPiece();
-
+                    
+                    string cellContent;
                     if (piece == null)
                     {
-                        Console.Write(". "); // Represents an empty square
+                        // For an empty square, just use spaces
+                        cellContent = "   ";
                     }
                     else
                     {
-                        char pieceChar = GetPieceChar(piece); // Get character representation of the piece
-                        Console.Write($"{pieceChar} ");
-                    }
-                }
-                Console.WriteLine($"| {y + 1}"); // End of row, repeat rank number
-            }
-            Console.WriteLine("   -----------------"); // Separator
-            Console.WriteLine("    a b c d e f g h\n"); // Column headers again
-        }
+                        // 3. Get the piece character and color
+                        ConsoleColor foregroundColor = (piece.GetColor() == ColorType.White) ? ConsoleColor.White : ConsoleColor.Black;
+                        Console.ForegroundColor = foregroundColor;
+                        string pieceChar = GetPieceChar(piece);
 
+                        // 4. Center the character within a fixed-width cell (3 characters wide)
+                        cellContent = $" {pieceChar} ";
+                    }
+                    
+                    // 5. Print the formatted cell content
+                    Console.Write(cellContent);
+
+                    // Reset colors for the next iteration
+                    Console.ResetColor();
+                }
+                
+                // Print the right border and rank number, then reset colors for the new line
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.WriteLine($"| {y + 1}");
+            }
+            
+            Console.WriteLine("   -------------------------");
+            Console.WriteLine("    a  b  c  d  e  f  g  h \n");
+            Console.ResetColor(); // Final reset to be safe
+        }
+        
         // Returns a character representation for a given piece (uppercase for White, lowercase for Black)
-        private char GetPieceChar(IPiece piece)
+        private string GetPieceChar(IPiece piece)
         {
-            char pieceChar = ' ';
+            string pieceChar = " ";
             switch (piece.GetPieceType())
             {
-                case PieceType.Pawn: pieceChar = 'P'; break;
-                case PieceType.Rook: pieceChar = 'R'; break;
-                case PieceType.Knight: pieceChar = 'N'; break;
-                case PieceType.Bishop: pieceChar = 'B'; break;
-                case PieceType.Queen: pieceChar = 'Q'; break;
-                case PieceType.King: pieceChar = 'K'; break;
-                // Add any other piece types if you have them
-                default: pieceChar = '?'; break; // Fallback for unknown piece types
-            }
-
-            // Convert to lowercase if the piece is Black
-            if (piece.GetColor() == ColorType.Black)
-            {
-                pieceChar = char.ToLower(pieceChar);
+                case PieceType.King:
+                    pieceChar = (piece.GetColor() == ColorType.White) ? "\u2654" : "\u265a"; // White King: ♔, Black King: ♚
+                    break;
+                case PieceType.Queen:
+                    pieceChar = (piece.GetColor() == ColorType.White) ? "\u2655" : "\u265b"; // White Queen: ♕, Black Queen: ♛
+                    break;
+                case PieceType.Rook:
+                    pieceChar = (piece.GetColor() == ColorType.White) ? "\u2656" : "\u265c"; // White Rook: ♖, Black Rook: ♜
+                    break;
+                case PieceType.Bishop:
+                    pieceChar = (piece.GetColor() == ColorType.White) ? "\u2657" : "\u265d"; // White Bishop: ♗, Black Bishop: ♝
+                    break;
+                case PieceType.Knight:
+                    pieceChar = (piece.GetColor() == ColorType.White) ? "\u2658" : "\u265e"; // White Knight: ♘, Black Knight: ♞
+                    break;
+                case PieceType.Pawn:
+                    pieceChar = (piece.GetColor() == ColorType.White) ? "\u2659" : "\u265f"; // White Pawn: ♙, Black Pawn: ♟
+                    break;
             }
             return pieceChar;
         }
