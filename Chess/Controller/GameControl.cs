@@ -270,25 +270,47 @@ public class GameControl
             }
         }
 
-        // Move the piece
+        // bool isPawnPromotion = false;
+        if (pieceToMove.GetPieceType() == PieceType.Pawn)
+        {
+            int promotionRank = (pieceToMove.GetColor() == ColorType.White) ? 7 : 0; 
+
+            if (destinationSquare.GetPosition().Y == promotionRank)
+            {
+                // isPawnPromotion = true;
+                
+                IPiece newPromotedPiece = new Piece(
+                    pieceToMove.GetColor(),
+                    PieceState.Active,
+                    PieceType.Queen, // Default to Queen for now, will allow choice later
+                    destinationSquare.GetPosition() 
+                );
+
+                var currentPlayerPieces = PlayerPieces.First(p => p.Key.GetColor() == pieceToMove.GetColor()).Value;
+                currentPlayerPieces.Remove(pieceToMove); 
+                currentPlayerPieces.Add(newPromotedPiece); 
+
+                pieceToMove = newPromotedPiece;
+
+                HandlePawnPromotion(newPromotedPiece); 
+            }
+        }
+        
         this._intendedSquareSource.SetPiece(null); 
-        destinationSquare.SetPiece(pieceToMove); 
-        pieceToMove.SetCurrentCoordinate(destinationSquare.GetPosition()); 
+        destinationSquare.SetPiece(pieceToMove);
+        pieceToMove.SetCurrentCoordinate(destinationSquare.GetPosition());
         pieceToMove.SetHasMoved(true);
 
-        // Record the last move for en passant logic in the next turn
         this.LastMoveSource = sourceSquare;
         this.LastMoveDestination = destinationSquare;
-        this.LastMovedPiece = pieceToMove;
+        this.LastMovedPiece = pieceToMove; 
 
-        // Reset move related state
         this._intendedSquareSource = null;
         this.CurrentLegalMoves = null;
 
-        HandleMoveDone(); // Trigger OnMoveDone event
+        HandleMoveDone(); 
 
 
-        // Update player's move count (for 50-move rule)
         var currentPlayer = Players[_currentPlayerIndex];
         if (capturedPiece != null || isEnPassantMove || pieceToMove.GetPieceType() == PieceType.Pawn)
         {
@@ -298,7 +320,6 @@ public class GameControl
         {
             currentPlayer.SetMoveCountNoCaptureNoPromotion(currentPlayer.GetMoveCountNoCaptureNoPromotion() + 1);
         }
-
         NextTurn();
 
         return true;
