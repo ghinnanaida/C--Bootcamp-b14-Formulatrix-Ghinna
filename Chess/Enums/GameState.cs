@@ -6,6 +6,7 @@ public enum GameState
     IntendingMove,
     MakingMove,
     Check,
+    FiftyMoveDraw,
     CheckmateBlackWin,
     CheckmateWhiteWin,
     Stalemate,

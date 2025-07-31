@@ -351,7 +351,6 @@ public class GameControl
             }
             else
             {
-                
                 this.State = GameState.Check;
                 HandleCheck(); 
             }
@@ -362,6 +361,12 @@ public class GameControl
             {
                 this.State = GameState.Stalemate;
                 HandleStalemate(); 
+            }
+            else if (currentPlayer.GetMoveCountNoCaptureNoPromotion() >= 100) 
+            {
+                State = GameState.FiftyMoveDraw; 
+                HandleStalemate(); 
+                Console.WriteLine("Draw by 50-move rule!"); 
             }
             else
             {
@@ -908,7 +913,7 @@ public class GameControl
     public void HandleStalemate()
     {
         OnStalemate?.Invoke();
-        Console.WriteLine("Stalemate! Game Over.");
+        Console.WriteLine("Draw! Game Over.");
         State = GameState.Stalemate;
     }
 }
