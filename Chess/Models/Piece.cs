@@ -9,7 +9,7 @@ public class Piece : IPiece
     public ColorType Color { get; }
     public PieceState State { get; private set; }
     public PieceType Type { get; }
-    public Point InitialCoordinate { get; }
+    public Point InitialCoordinate { get; private set; }
     public Piece(ColorType color, PieceState state, PieceType type, Point initialCoordinate)
     {
         this.Color = color;
@@ -26,5 +26,10 @@ public class Piece : IPiece
     public void SetState(PieceState newState)
     {
         this.State = newState;
+    }
+
+    public void SetInitialCoordinate(Point newCoordinate)
+    {
+        this.InitialCoordinate = newCoordinate;
     }
 }

@@ -10,4 +10,5 @@ public interface IPiece
     PieceType GetPieceType();
     Point GetInitialCoordinate();
     void SetState(PieceState newState);
+    void SetInitialCoordinate(Point newCoordinate);
 }

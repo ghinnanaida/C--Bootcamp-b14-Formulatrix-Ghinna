@@ -20,7 +20,7 @@ public class Square : ISquare
     }
 
     public IPiece? GetPiece() => this.Piece;
-    public void SetPieces(IPiece? newPiece)
+    public void SetPiece(IPiece? newPiece)
     {
         this.Piece = newPiece;
     }

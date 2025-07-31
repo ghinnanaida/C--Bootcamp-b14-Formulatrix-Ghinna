@@ -6,6 +6,6 @@ public interface ISquare
 {
     Point GetPosition();
     IPiece? GetPiece();
-    void SetPieces(IPiece? newPiece);
+    void SetPiece(IPiece? newPiece);
     void SetPosition(Point newCoordinate);
 }
