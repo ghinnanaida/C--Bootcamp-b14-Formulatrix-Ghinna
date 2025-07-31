@@ -31,7 +31,7 @@ public class Board : IBoard
         {
             throw new ArgumentOutOfRangeException(nameof(coordinate), "Coordinate is out of board bounds.");
         }
-        this.Squares[coordinate.X, coordinate.Y].SetPieces(piece);
+        this.Squares[coordinate.X, coordinate.Y].SetPiece(piece);
     }
 
 }

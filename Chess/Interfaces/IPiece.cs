@@ -9,6 +9,10 @@ public interface IPiece
     PieceState GetState();
     PieceType GetPieceType();
     Point GetInitialCoordinate();
+    Point GetCurrentCoordinate();
+    bool GetHasMoved();
     void SetState(PieceState newState);
-    void SetInitialCoordinate(Point newCoordinate);
+    void SetCurrentCoordinate(Point newCoordinate);
+    void SetPieceType(PieceType newType);
+    void SetHasMoved(bool moved);
 }
