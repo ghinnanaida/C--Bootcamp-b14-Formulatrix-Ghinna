@@ -305,8 +305,6 @@ public class GameControl
         this.LastMoveDestination = destinationSquare;
         this.LastMovedPiece = pieceToMove; 
 
-        this._intendedSquareSource = null;
-        this.CurrentLegalMoves = null;
 
         HandleMoveDone(); 
 
@@ -333,23 +331,43 @@ public class GameControl
         this._intendedSquareSource = null;
         this.CurrentLegalMoves = null;
 
-        // After changing turn, check if the current player's king is in check
-        if (IsKingInCheck(GetCurrentPlayer().GetColor()))
+        var currentPlayer = GetCurrentPlayer();
+        ColorType currentPlayerColor = currentPlayer.GetColor();
+
+        bool isInCheck = IsKingInCheck(currentPlayerColor);
+        List<ISquare> allPossibleLegalMovesForCurrentPlayer = GetAllPiecesLegalMoves(currentPlayerColor);
+
+        if (isInCheck)
         {
-            State = GameState.Check;
-            HandleCheck(); // Notify subscribers of check
-            // Further logic to check for checkmate/stalemate will go here
-        }
-        else
-        {
-            // If not in check, check for stalemate
-            if (GetAllPiecesLegalMoves(GetCurrentPlayer().GetColor()).Count == 0)
+            if (allPossibleLegalMovesForCurrentPlayer.Count == 0)
             {
-                State = GameState.Stalemate;
-                HandleStalemate(); // Notify subscribers of stalemate
+                this.State = GameState.CheckmateBlackWin; 
+                if (currentPlayerColor == ColorType.White) {
+                    this.State = GameState.CheckmateBlackWin; 
+                } else {
+                    this.State = GameState.CheckmateWhiteWin; 
+                }
+                HandleCheckmate();
+            }
+            else
+            {
+                
+                this.State = GameState.Check;
+                HandleCheck(); 
             }
         }
-
+        else 
+        {
+            if (allPossibleLegalMovesForCurrentPlayer.Count == 0)
+            {
+                this.State = GameState.Stalemate;
+                HandleStalemate(); 
+            }
+            else
+            {
+                this.State = GameState.IntendingMove;
+            }
+        }
     }
 
     public List<ISquare> GetPseudoLegalMoves(ISquare sourceSquare)
