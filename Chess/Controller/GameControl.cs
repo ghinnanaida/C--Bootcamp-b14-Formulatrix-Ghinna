@@ -168,12 +168,11 @@ public class GameControl
             return false;
         }
 
-        // Validate if the destination square is a legal move
         if (CurrentLegalMoves == null || !CurrentLegalMoves.Contains(destinationSquare))
         {
             Console.WriteLine("Invalid move. The selected destination is not a legal move for the chosen piece.");
-            this._intendedSquareSource = null; // Reset
-            this.State = GameState.IntendingMove; // Go back to intending
+            this._intendedSquareSource = null; 
+            this.State = GameState.IntendingMove; 
             return false;
         }
 
@@ -186,26 +185,61 @@ public class GameControl
             return false;
         }
 
-        // Handle potential capture
-        IPiece? capturedPiece = destinationSquare.GetPiece();
-        if (capturedPiece != null)
+        IPiece? capturedPiece = null; 
+
+        bool isEnPassantMove = false;
+        IPiece? enPassantCapturedPawn = null;
+        ISquare? enPassantCapturedSquare = null;
+
+        
+        if (pieceToMove.GetPieceType() == PieceType.Pawn && destinationSquare.GetPiece() == null &&
+            Math.Abs(sourceSquare.GetPosition().X - destinationSquare.GetPosition().X) == 1 && 
+            LastMovedPiece != null && LastMovedPiece.GetPieceType() == PieceType.Pawn &&
+            LastMoveDestination != null &&
+            LastMoveDestination.GetPosition().X == destinationSquare.GetPosition().X && 
+            LastMoveDestination.GetPosition().Y == sourceSquare.GetPosition().Y) 
         {
-            capturedPiece.SetState(PieceState.Captured);
-            HandleCapturePiece(capturedPiece);
-            // Remove captured piece from the player's pieces list
-            foreach (var playerEntry in this.PlayerPieces)
+            
+            isEnPassantMove = true;
+            enPassantCapturedPawn = LastMovedPiece; 
+            enPassantCapturedSquare = LastMoveDestination;
+        }
+
+        if (isEnPassantMove && enPassantCapturedPawn != null && enPassantCapturedSquare != null)
+        {
+            enPassantCapturedPawn.SetState(PieceState.Captured);
+            enPassantCapturedSquare.SetPiece(null); 
+            HandleEnPassant(enPassantCapturedPawn); 
+            
+            foreach (var playerEntry in PlayerPieces)
             {
-                if (playerEntry.Key.GetColor() == capturedPiece.GetColor())
+                if (playerEntry.Key.GetColor() == enPassantCapturedPawn.GetColor())
                 {
-                    playerEntry.Value.Remove(capturedPiece);
+                    playerEntry.Value.Remove(enPassantCapturedPawn);
                     break;
                 }
             }
-            // var opponentPlayer = Players.First(p => p.GetColor() != pieceToMove.GetColor());
-            // PlayerPieces[opponentPlayer].Remove(capturedPiece);
+        }
+        else 
+        {
+            
+            capturedPiece = destinationSquare.GetPiece(); 
+            if (capturedPiece != null)
+            {
+                capturedPiece.SetState(PieceState.Captured);
+                HandleCapturePiece(capturedPiece);
+                
+                foreach (var playerEntry in this.PlayerPieces)
+                {
+                    if (playerEntry.Key.GetColor() == capturedPiece.GetColor())
+                    {
+                        playerEntry.Value.Remove(capturedPiece);
+                        break;
+                    }
+                }
+            }
         }
 
-        // Handle Castling special case (rook movement)
         if (pieceToMove.GetPieceType() == PieceType.King &&
             Math.Abs(sourceSquare.GetPosition().X - destinationSquare.GetPosition().X) == 2)
         {
@@ -232,20 +266,17 @@ public class GameControl
                 rookDestSquare.SetPiece(rookToMove);
                 rookToMove.SetCurrentCoordinate(rookDestSquare.GetPosition());
                 rookToMove.SetHasMoved(true);
-                HandleCastling(pieceToMove, rookToMove); // Invoke castling event with king and rook
+                HandleCastling(pieceToMove, rookToMove); 
             }
         }
 
-        // Handle En Passant special case - To be implemented
-        // Handle Pawn Promotion special case - To be implemented
-
         // Move the piece
-        this._intendedSquareSource.SetPiece(null); // Remove piece from source
-        destinationSquare.SetPiece(pieceToMove); // Place piece on destination
-        pieceToMove.SetCurrentCoordinate(destinationSquare.GetPosition()); // Update piece's "current" coordinate
-        pieceToMove.SetHasMoved(true); 
+        this._intendedSquareSource.SetPiece(null); 
+        destinationSquare.SetPiece(pieceToMove); 
+        pieceToMove.SetCurrentCoordinate(destinationSquare.GetPosition()); 
+        pieceToMove.SetHasMoved(true);
 
-        // Record the last move for en passant
+        // Record the last move for en passant logic in the next turn
         this.LastMoveSource = sourceSquare;
         this.LastMoveDestination = destinationSquare;
         this.LastMovedPiece = pieceToMove;
@@ -254,24 +285,20 @@ public class GameControl
         this._intendedSquareSource = null;
         this.CurrentLegalMoves = null;
 
-
         HandleMoveDone(); // Trigger OnMoveDone event
 
 
         // Update player's move count (for 50-move rule)
         var currentPlayer = Players[_currentPlayerIndex];
-        if (capturedPiece != null || pieceToMove.GetPieceType() == PieceType.Pawn)
+        if (capturedPiece != null || isEnPassantMove || pieceToMove.GetPieceType() == PieceType.Pawn)
         {
-            currentPlayer.SetMoveCountNoCaptureNoPromotion(0); // Reset if capture or pawn move
+            currentPlayer.SetMoveCountNoCaptureNoPromotion(0); 
         }
         else
         {
             currentPlayer.SetMoveCountNoCaptureNoPromotion(currentPlayer.GetMoveCountNoCaptureNoPromotion() + 1);
         }
 
-        // Check for game end conditions (Checkmate, Stalemate)
-        // This is complex logic to be implemented later.
-        // For now, just advance turn.
         NextTurn();
 
         return true;
@@ -343,8 +370,8 @@ public class GameControl
             ISquare originalSourceSquare = sourceSquare;
             ISquare originalDestSquare = destSquare;
 
-            IPiece? originalPieceAtSource = originalSourceSquare.GetPiece(); // Store original piece from source
-            IPiece? originalPieceAtDest = originalDestSquare.GetPiece(); // Store original piece from destination
+            IPiece? originalPieceAtSource = originalSourceSquare.GetPiece();
+            IPiece? originalPieceAtDest = originalDestSquare.GetPiece();
 
             // Store original coordinates and HasMoved state of the piece to restore later
             Point originalPieceCurrentCoord = originalPieceAtSource!.GetCurrentCoordinate();
@@ -355,13 +382,13 @@ public class GameControl
             originalSourceSquare.SetPiece(null);
             originalDestSquare.SetPiece(originalPieceAtSource);
             originalPieceAtSource.SetCurrentCoordinate(originalDestSquare.GetPosition());
-            originalPieceAtSource.SetHasMoved(true); // Temporarily assume it has moved for the check
+            originalPieceAtSource.SetHasMoved(true);
 
             // Simulate castling rook movement if it was a castling move
             IPiece? simulatedRook = null;
             ISquare? simulatedRookSource = null;
             ISquare? simulatedRookDest = null;
-            Point originalRookCurrentCoord = new Point(); // Initialize to avoid unassigned warning
+            Point originalRookCurrentCoord = new Point();
             bool originalRookHasMoved = false;
 
             if (pieceToMove.GetPieceType() == PieceType.King &&
@@ -378,8 +405,8 @@ public class GameControl
                     simulatedRookDest = Board.GetSquare(new Point { X = sourceSquare.GetPosition().X - 1, Y = sourceSquare.GetPosition().Y });
                 }
 
-                simulatedRook = simulatedRookSource?.GetPiece(); // Get the rook, can be null
-                if (simulatedRook != null) // Check if rook exists before moving
+                simulatedRook = simulatedRookSource?.GetPiece();
+                if (simulatedRook != null)
                 {
                     originalRookCurrentCoord = simulatedRook.GetCurrentCoordinate();
                     originalRookHasMoved = simulatedRook.GetHasMoved();
@@ -513,12 +540,12 @@ public class GameControl
         return IsSquareAttacked(kingSquare, opposingColor);
     }
 
-
     public List<ISquare> GetPawnMoves(Point position, ColorType pieceColor)
     {
         List<ISquare> legalMoves = new List<ISquare>();
         int direction = pieceColor == ColorType.White ? 1 : -1;
         int startY = pieceColor == ColorType.White ? 1 : 6;
+        int enPassantRank = pieceColor == ColorType.White ? 4 : 3; // Rank where En Passant capture happens
 
         // Forward move
         var oneStep = new Point { X = position.X, Y = position.Y + direction };
@@ -565,6 +592,35 @@ public class GameControl
             if (target != null && target.GetColor() != pieceColor && target.GetState() == PieceState.Active)
             {
                 legalMoves.Add(rightSquare);
+            }
+        }
+
+        // Check for En Passant opportunity
+        if (position.Y == enPassantRank && LastMovedPiece != null &&
+            LastMovedPiece.GetPieceType() == PieceType.Pawn &&
+            LastMovedPiece.GetColor() != pieceColor &&
+            LastMoveSource != null && LastMoveDestination != null)
+        {
+            // Check if the last moved piece was a pawn that just moved two squares
+            // AND landed directly to the left or right of the current pawn.
+            Point lastPawnSource = LastMoveSource.GetPosition();
+            Point lastPawnDest = LastMoveDestination.GetPosition();
+
+            bool isTwoSquareMove = Math.Abs(lastPawnDest.Y - lastPawnSource.Y) == 2;
+            bool landedAdjacent = lastPawnDest.Y == position.Y && (lastPawnDest.X == position.X - 1 || lastPawnDest.X == position.X + 1);
+
+            if (isTwoSquareMove && landedAdjacent)
+            {
+                // The square the current pawn moves *to* for en passant is behind the captured pawn
+                Point enPassantTargetSquare = new Point { X = lastPawnDest.X, Y = position.Y + direction };
+                if (enPassantTargetSquare.IsValid)
+                {
+                    // Ensure the target square for the moving pawn is empty (it should be)
+                    if (Board.GetSquare(enPassantTargetSquare).GetPiece() == null)
+                    {
+                        legalMoves.Add(Board.GetSquare(enPassantTargetSquare));
+                    }
+                }
             }
         }
 
@@ -759,7 +815,6 @@ public class GameControl
         }
         return legalMoves;
     }
-
 
     public void HandleMoveDone()
     {
