@@ -860,6 +860,21 @@ public class GameControl
         return legalMoves;
     }
 
+    public void Resign(ColorType resigningPlayerColor)
+    {
+        // The resigning player's color determines who wins
+        if (resigningPlayerColor == ColorType.White)
+        {
+            this.State = GameState.Resignation;
+            Console.WriteLine("White has resigned. Black wins!");
+        }
+        else // Black resigns
+        {
+            this.State = GameState.Resignation;
+            Console.WriteLine("Black has resigned. White wins!");
+        }
+    }
+
     public void HandleMoveDone()
     {
         OnMoveDone?.Invoke();

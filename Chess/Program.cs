@@ -49,43 +49,43 @@ namespace ChessGame
                    _gameControl.State != GameState.FiftyMoveDraw && // Check for 50-move rule draw
                    _gameControl.State != GameState.Resignation)
             {
-                Console.WriteLine("\nEnter your move (e.g., e2e4): ");
+                Console.WriteLine("\nEnter your move (e.g., e2e4), 'resign' to concede, or 'exit' to quit: ");
                 string? input = Console.ReadLine()?.ToLower(); // Read player input
 
                 if (string.IsNullOrWhiteSpace(input))
                 {
                     Console.WriteLine("Invalid input. Please enter a move.");
-                    continue; // Skip to next loop iteration
+                    continue;
+                }
+
+                if (input == "resign")
+                {
+                    _gameControl.Resign(_gameControl.GetCurrentPlayer().GetColor());
+                    break; 
                 }
                 
-                // Allow 'exit' command to quit the game
                 if (input == "exit")
                 {
                     Console.WriteLine("Exiting game.");
-                    break; // Exit the game loop
+                    break;
                 }
 
-                // Parse the input string into source and destination coordinates
                 Point? sourceCoord = ParseCoordinate(input.Substring(0, 2));
                 Point? destCoord = ParseCoordinate(input.Substring(2, 2));
 
                 if (sourceCoord == null || destCoord == null)
                 {
                     Console.WriteLine("Invalid coordinate format. Use 'a1' to 'h8'.");
-                    continue; // Skip to next loop iteration
+                    continue;
                 }
 
-                // Get the ISquare objects corresponding to the parsed coordinates
                 ISquare sourceSquare = _gameControl.Board.GetSquare(sourceCoord.Value);
                 ISquare destSquare = _gameControl.Board.GetSquare(destCoord.Value);
 
-                // --- Game Logic Flow for Console UI ---
                 try
                 {
-                    // Step 1: Player intends to move a piece from the source square
                     _gameControl.IntendMove(sourceSquare);
 
-                    // If IntendMove was successful and a piece is selected
                     if (_gameControl.State == GameState.MakingMove && _gameControl.CurrentLegalMoves != null)
                     {
                         // Step 2: Check if the chosen destination is a legal move
@@ -95,8 +95,7 @@ namespace ChessGame
                             bool moveSuccessful = _gameControl.MakeMove(destSquare);
                             if (moveSuccessful)
                             {
-                                DisplayBoard(); // Refresh the board display after a successful move
-                                // Display whose turn it is next (GameControl.NextTurn already changed _currentPlayerIndex)
+                                DisplayBoard(); 
                                 Console.WriteLine($"{_gameControl.GetCurrentPlayer().GetColor()} to move.");
                             }
                             else
@@ -148,21 +147,17 @@ namespace ChessGame
             }
         }
 
-        // --- Helper Methods for Console UI ---
-
-        // Converts an algebraic coordinate string (e.g., "a1") to a Point struct (e.g., X=0, Y=0)
         private Point? ParseCoordinate(string algebraicCoord)
         {
             if (string.IsNullOrWhiteSpace(algebraicCoord) || algebraicCoord.Length != 2)
                 return null;
 
-            char fileChar = algebraicCoord[0]; // 'a' through 'h'
-            char rankChar = algebraicCoord[1]; // '1' through '8'
+            char fileChar = algebraicCoord[0];
+            char rankChar = algebraicCoord[1];
 
-            int x = -1; // Corresponds to file (column 0-7)
-            int y = -1; // Corresponds to rank (row 0-7)
+            int x = -1; 
+            int y = -1;
 
-            // Convert file char ('a'-'h') to X coordinate (0-7)
             if (fileChar >= 'a' && fileChar <= 'h')
             {
                 x = fileChar - 'a'; // 'a' becomes 0, 'b' becomes 1, etc.
