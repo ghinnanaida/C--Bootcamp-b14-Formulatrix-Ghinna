@@ -132,7 +132,8 @@ public class GameControl
 
     public void IntendMove(ISquare sourceSquare)
     {
-        if (State != GameState.IntendingMove)
+        // Allow moves in both IntendingMove and Check states
+        if (State != GameState.IntendingMove && State != GameState.Check)
         {
             Console.WriteLine("Cannot intend move in current game state.");
             return;
@@ -150,7 +151,6 @@ public class GameControl
         this._intendedSquareSource = sourceSquare;
         this.State = GameState.MakingMove;
         this.CurrentLegalMoves = GetLegalMoves(this._intendedSquareSource);
-
     }
 
     public void CancelMove()
@@ -158,6 +158,36 @@ public class GameControl
         this._intendedSquareSource = null;
         this.CurrentLegalMoves = null;
         this.State = GameState.IntendingMove;
+    }
+    
+    // *** ADDED: Method to get promotion piece choice from player ***
+    public PieceType GetPromotionChoice(ColorType color)
+    {
+        Console.WriteLine($"{color} pawn reached the end! Choose promotion:");
+        Console.WriteLine("1. Queen");
+        Console.WriteLine("2. Rook");
+        Console.WriteLine("3. Bishop");
+        Console.WriteLine("4. Knight");
+        Console.Write("Enter your choice (1-4): ");
+        
+        while (true)
+        {
+            string? input = Console.ReadLine();
+            switch (input)
+            {
+                case "1":
+                    return PieceType.Queen;
+                case "2":
+                    return PieceType.Rook;
+                case "3":
+                    return PieceType.Bishop;
+                case "4":
+                    return PieceType.Knight;
+                default:
+                    Console.Write("Invalid choice. Please enter 1-4: ");
+                    break;
+            }
+        }
     }
     
     public bool MakeMove(ISquare destinationSquare)
@@ -275,11 +305,13 @@ public class GameControl
 
             if (destinationSquare.GetPosition().Y == promotionRank)
             {
+                // *** CHANGED: Ask player for promotion choice instead of auto-queen ***
+                PieceType promotionType = GetPromotionChoice(pieceToMove.GetColor());
                 
                 IPiece newPromotedPiece = new Piece(
                     pieceToMove.GetColor(),
                     PieceState.Active,
-                    PieceType.Queen, 
+                    promotionType, // *** CHANGED: Use player's choice ***
                     destinationSquare.GetPosition() 
                 );
 
@@ -496,41 +528,127 @@ public class GameControl
     }
 
     public bool IsSquareAttacked(ISquare targetSquare, ColorType attackingColor)
+{
+    foreach (var playerEntry in PlayerPieces)
     {
-        foreach (var playerEntry in PlayerPieces)
+        if (playerEntry.Key.GetColor() == attackingColor)
         {
-            if (playerEntry.Key.GetColor() == attackingColor)
+            foreach (var attackingPiece in playerEntry.Value)
             {
-                foreach (var attackingPiece in playerEntry.Value)
+                if (attackingPiece.GetState() != PieceState.Active) continue;
+
+                var piecePos = attackingPiece.GetCurrentCoordinate();
+                var pieceType = attackingPiece.GetPieceType();
+
+                // Handle each piece type directly to avoid recursion
+                switch (pieceType)
                 {
-                    if (attackingPiece.GetState() != PieceState.Active) continue;
-
-                    if (attackingPiece.GetPieceType() == PieceType.Pawn)
-                    {
-                        var pawnPos = attackingPiece.GetCurrentCoordinate();
+                    case PieceType.Pawn:
                         int direction = (attackingPiece.GetColor() == ColorType.White) ? 1 : -1;
-
-                        Point attackLeft = new Point { X = pawnPos.X - 1, Y = pawnPos.Y + direction };
-                        Point attackRight = new Point { X = pawnPos.X + 1, Y = pawnPos.Y + direction };
+                        Point attackLeft = new Point { X = piecePos.X - 1, Y = piecePos.Y + direction };
+                        Point attackRight = new Point { X = piecePos.X + 1, Y = piecePos.Y + direction };
 
                         if ((targetSquare.GetPosition().Equals(attackLeft) && attackLeft.IsValid) ||
                             (targetSquare.GetPosition().Equals(attackRight) && attackRight.IsValid))
                         {
                             return true;
                         }
-                        continue; 
-                    }
+                        break;
 
-                    List<ISquare> attackingMoves = GetPseudoLegalMoves(Board.GetSquare(attackingPiece.GetCurrentCoordinate()));
+                    case PieceType.King:
+                        // Check if target is within one square of the king (avoid recursion)
+                        int deltaX = Math.Abs(targetSquare.GetPosition().X - piecePos.X);
+                        int deltaY = Math.Abs(targetSquare.GetPosition().Y - piecePos.Y);
+                        if (deltaX <= 1 && deltaY <= 1 && (deltaX != 0 || deltaY != 0))
+                        {
+                            return true;
+                        }
+                        break;
 
-                    if (attackingMoves.Contains(targetSquare))
-                    {
-                        return true;
-                    }
+                    case PieceType.Knight:
+                        Point[] knightMoves = {
+                            new Point{ X = 2, Y = 1}, new Point{ X = 2, Y = -1}, 
+                            new Point{ X = -2, Y = 1}, new Point{ X = -2, Y = -1},
+                            new Point{ X = 1, Y = 2}, new Point{ X = 1, Y = -2}, 
+                            new Point{ X = -1, Y = 2}, new Point{ X = -1, Y = -2}
+                        };
+
+                        foreach (var move in knightMoves)
+                        {
+                            var attackPos = new Point { X = piecePos.X + move.X, Y = piecePos.Y + move.Y };
+                            if (attackPos.IsValid && targetSquare.GetPosition().Equals(attackPos))
+                            {
+                                return true;
+                            }
+                        }
+                        break;
+
+                    case PieceType.Rook:
+                        if (IsInLineOfSight(piecePos, targetSquare.GetPosition(), true, false))
+                        {
+                            return true;
+                        }
+                        break;
+
+                    case PieceType.Bishop:
+                        if (IsInLineOfSight(piecePos, targetSquare.GetPosition(), false, true))
+                        {
+                            return true;
+                        }
+                        break;
+
+                    case PieceType.Queen:
+                        if (IsInLineOfSight(piecePos, targetSquare.GetPosition(), true, true))
+                        {
+                            return true;
+                        }
+                        break;
                 }
             }
         }
-        return false;
+    }
+    return false;
+}
+
+    // Helper method to check line of sight for sliding pieces
+    private bool IsInLineOfSight(Point from, Point to, bool allowStraight, bool allowDiagonal)
+    {
+        int deltaX = to.X - from.X;
+        int deltaY = to.Y - from.Y;
+
+        // Check if move is straight (rook-like)
+        bool isStraight = (deltaX == 0 || deltaY == 0);
+        // Check if move is diagonal (bishop-like)
+        bool isDiagonal = (Math.Abs(deltaX) == Math.Abs(deltaY));
+
+        if (isStraight && !allowStraight) return false;
+        if (isDiagonal && !allowDiagonal) return false;
+        if (!isStraight && !isDiagonal) return false;
+
+        // Calculate step direction
+        int stepX = deltaX == 0 ? 0 : (deltaX > 0 ? 1 : -1);
+        int stepY = deltaY == 0 ? 0 : (deltaY > 0 ? 1 : -1);
+
+        // Check if path is clear (excluding the target square)
+        int currentX = from.X + stepX;
+        int currentY = from.Y + stepY;
+
+        while (currentX != to.X || currentY != to.Y)
+        {
+            Point currentPos = new Point { X = currentX, Y = currentY };
+            if (!currentPos.IsValid) return false;
+
+            var square = Board.GetSquare(currentPos);
+            if (square.GetPiece() != null)
+            {
+                return false; // Path is blocked
+            }
+
+            currentX += stepX;
+            currentY += stepY;
+        }
+
+        return true;
     }
 
     public bool IsKingInCheck(ColorType kingColor)
@@ -820,6 +938,90 @@ public class GameControl
                 }
             }
         }
+
+        // *** ADDED: Castling logic for King moves ***
+        IPiece? king = Board.GetSquare(position).GetPiece();
+        if (king != null && !king.GetHasMoved() && !IsKingInCheck(pieceColor))
+        {
+            // Kingside castling
+            IPiece? kingsideRook = Board.GetSquare(new Point { X = 7, Y = position.Y }).GetPiece();
+            if (kingsideRook != null && kingsideRook.GetPieceType() == PieceType.Rook && 
+                !kingsideRook.GetHasMoved() && kingsideRook.GetColor() == pieceColor)
+            {
+                // Check if squares between king and rook are empty
+                bool pathClear = true;
+                for (int x = position.X + 1; x < 7; x++)
+                {
+                    if (Board.GetSquare(new Point { X = x, Y = position.Y }).GetPiece() != null)
+                    {
+                        pathClear = false;
+                        break;
+                    }
+                }
+
+                if (pathClear)
+                {
+                    // Check if king doesn't pass through or land on attacked squares
+                    bool safeToCastle = true;
+                    ColorType opposingColor = (pieceColor == ColorType.White) ? ColorType.Black : ColorType.White;
+                    
+                    for (int x = position.X + 1; x <= position.X + 2; x++)
+                    {
+                        ISquare squareToCheck = Board.GetSquare(new Point { X = x, Y = position.Y });
+                        if (IsSquareAttacked(squareToCheck, opposingColor))
+                        {
+                            safeToCastle = false;
+                            break;
+                        }
+                    }
+
+                    if (safeToCastle)
+                    {
+                        legalMoves.Add(Board.GetSquare(new Point { X = position.X + 2, Y = position.Y }));
+                    }
+                }
+            }
+
+            // Queenside castling
+            IPiece? queensideRook = Board.GetSquare(new Point { X = 0, Y = position.Y }).GetPiece();
+            if (queensideRook != null && queensideRook.GetPieceType() == PieceType.Rook && 
+                !queensideRook.GetHasMoved() && queensideRook.GetColor() == pieceColor)
+            {
+                // Check if squares between king and rook are empty
+                bool pathClear = true;
+                for (int x = 1; x < position.X; x++)
+                {
+                    if (Board.GetSquare(new Point { X = x, Y = position.Y }).GetPiece() != null)
+                    {
+                        pathClear = false;
+                        break;
+                    }
+                }
+
+                if (pathClear)
+                {
+                    // Check if king doesn't pass through or land on attacked squares
+                    bool safeToCastle = true;
+                    ColorType opposingColor = (pieceColor == ColorType.White) ? ColorType.Black : ColorType.White;
+                    
+                    for (int x = position.X - 1; x >= position.X - 2; x--)
+                    {
+                        ISquare squareToCheck = Board.GetSquare(new Point { X = x, Y = position.Y });
+                        if (IsSquareAttacked(squareToCheck, opposingColor))
+                        {
+                            safeToCastle = false;
+                            break;
+                        }
+                    }
+
+                    if (safeToCastle)
+                    {
+                        legalMoves.Add(Board.GetSquare(new Point { X = position.X - 2, Y = position.Y }));
+                    }
+                }
+            }
+        }
+
         return legalMoves;
     }
 

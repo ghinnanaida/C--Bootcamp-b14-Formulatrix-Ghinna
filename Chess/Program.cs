@@ -39,12 +39,13 @@ namespace ChessGame
                    _gameControl.State != GameState.FiftyMoveDraw && 
                    _gameControl.State != GameState.Resignation)
             {
-                Console.WriteLine("\nEnter your move (e.g., e2e4), 'resign' to concede, or 'exit' to quit: ");
+                // *** CHANGED: New input flow - first ask for source square ***
+                Console.WriteLine("\nEnter the square of the piece you want to move (e.g., e2), 'resign' to concede, or 'exit' to quit: ");
                 string? input = Console.ReadLine()?.ToLower();
 
                 if (string.IsNullOrWhiteSpace(input))
                 {
-                    Console.WriteLine("Invalid input. Please enter a move.");
+                    Console.WriteLine("Invalid input. Please enter a square coordinate.");
                     continue;
                 }
 
@@ -60,17 +61,14 @@ namespace ChessGame
                     break;
                 }
 
-                Point? sourceCoord = ParseCoordinate(input.Substring(0, 2));
-                Point? destCoord = ParseCoordinate(input.Substring(2, 2));
-
-                if (sourceCoord == null || destCoord == null)
+                Point? sourceCoord = ParseCoordinate(input);
+                if (sourceCoord == null)
                 {
                     Console.WriteLine("Invalid coordinate format. Use 'a1' to 'h8'.");
                     continue;
                 }
 
                 ISquare sourceSquare = _gameControl.Board.GetSquare(sourceCoord.Value);
-                ISquare destSquare = _gameControl.Board.GetSquare(destCoord.Value);
 
                 try
                 {
@@ -78,23 +76,62 @@ namespace ChessGame
 
                     if (_gameControl.State == GameState.MakingMove && _gameControl.CurrentLegalMoves != null)
                     {
-                        if (_gameControl.CurrentLegalMoves.Contains(destSquare))
+                        if (_gameControl.CurrentLegalMoves.Count == 0)
                         {
-                            bool moveSuccessful = _gameControl.MakeMove(destSquare);
-                            if (moveSuccessful)
-                            {
-                                DisplayBoard(); 
-                                Console.WriteLine($"{_gameControl.GetCurrentPlayer().GetColor()} to move.");
-                            }
-                            else
-                            {
-                                Console.WriteLine("Move failed unexpectedly. Please try again.");
-                                _gameControl.CancelMove();
-                            }
+                            Console.WriteLine("This piece has no legal moves. Please select another piece.");
+                            _gameControl.CancelMove();
+                            continue;
+                        }
+
+                        // Display board with highlighted legal moves
+                        DisplayBoardWithLegalMoves(_gameControl.CurrentLegalMoves);
+                        
+                        Console.WriteLine($"Legal moves are highlighted in green.");
+                        Console.WriteLine($"Enter the destination square (e.g., e4) or 'cancel' to select a different piece:");
+                        
+                        string? destInput = Console.ReadLine()?.ToLower();
+
+                        if (string.IsNullOrWhiteSpace(destInput))
+                        {
+                            Console.WriteLine("Invalid input.");
+                            _gameControl.CancelMove();
+                            continue;
+                        }
+
+                        if (destInput == "cancel")
+                        {
+                            _gameControl.CancelMove();
+                            DisplayBoard();
+                            continue;
+                        }
+
+                        Point? destCoord = ParseCoordinate(destInput);
+                        if (destCoord == null)
+                        {
+                            Console.WriteLine("Invalid coordinate format. Use 'a1' to 'h8'.");
+                            _gameControl.CancelMove();
+                            continue;
+                        }
+
+                        ISquare destSquare = _gameControl.Board.GetSquare(destCoord.Value);
+                        
+                        // Check if the destination is a legal move
+                        if (!_gameControl.CurrentLegalMoves.Contains(destSquare))
+                        {
+                            Console.WriteLine("Invalid move. Please enter a valid destination from the highlighted squares.");
+                            // Don't cancel move, let them try again
+                            continue;
+                        }
+
+                        bool moveSuccessful = _gameControl.MakeMove(destSquare);
+                        if (moveSuccessful)
+                        {
+                            DisplayBoard(); 
+                            Console.WriteLine($"{_gameControl.GetCurrentPlayer().GetColor()} to move.");
                         }
                         else
                         {
-                            Console.WriteLine("Illegal move for the selected piece. Choose a valid destination.");
+                            Console.WriteLine("Move failed unexpectedly. Please try again.");
                             _gameControl.CancelMove();
                         }
                     }
@@ -171,6 +208,14 @@ namespace ChessGame
             return null; 
         }
 
+        // *** ADDED: Method to convert coordinates back to algebraic notation ***
+        private string CoordinateToAlgebraic(Point coord)
+        {
+            char file = (char)('a' + coord.X);
+            char rank = (char)('1' + coord.Y);
+            return $"{file}{rank}";
+        }
+
         private void DisplayBoard()
         {
             Console.Clear();
@@ -195,6 +240,72 @@ namespace ChessGame
                     if (piece == null)
                     {
                         cellContent = "   ";
+                    }
+                    else
+                    {
+                        ConsoleColor foregroundColor = (piece.GetColor() == ColorType.White) ? ConsoleColor.White : ConsoleColor.Black;
+                        Console.ForegroundColor = foregroundColor;
+                        string pieceChar = GetPieceChar(piece);
+
+                        cellContent = $" {pieceChar} ";
+                    }
+                    
+                    Console.Write(cellContent);
+
+                    Console.ResetColor();
+                }
+                
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.WriteLine($"| {y + 1}");
+            }
+            
+            Console.WriteLine("   -------------------------");
+            Console.WriteLine("    a  b  c  d  e  f  g  h \n");
+            Console.ResetColor();
+        }
+
+        // *** ADDED: Method to display board with highlighted legal moves ***
+        private void DisplayBoardWithLegalMoves(List<ISquare> legalMoves)
+        {
+            Console.Clear();
+            Console.OutputEncoding = System.Text.Encoding.UTF8; 
+            
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine("\n    a  b  c  d  e  f  g  h ");
+            Console.WriteLine("   -------------------------");
+
+            for (int y = 7; y >= 0; y--)
+            {
+                Console.Write($"{y + 1} |");
+                for (int x = 0; x < 8; x++)
+                {
+                    ISquare square = _gameControl.Board.GetSquare(new Point { X = x, Y = y });
+                    bool isLegalMove = legalMoves.Contains(square);
+                    
+                    ConsoleColor backgroundColor;
+                    if (isLegalMove)
+                    {
+                        backgroundColor = ConsoleColor.Green; // *** Highlight legal moves in green ***
+                    }
+                    else
+                    {
+                        backgroundColor = (x + y) % 2 == 0 ? ConsoleColor.Blue : ConsoleColor.Gray;
+                    }
+                    Console.BackgroundColor = backgroundColor;
+
+                    IPiece? piece = square.GetPiece();
+                    
+                    string cellContent;
+                    if (piece == null)
+                    {
+                        if (isLegalMove)
+                        {
+                            cellContent = " • "; // *** Show dot for empty legal move squares ***
+                        }
+                        else
+                        {
+                            cellContent = "   ";
+                        }
                     }
                     else
                     {
