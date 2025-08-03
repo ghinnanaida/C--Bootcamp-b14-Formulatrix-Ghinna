@@ -160,7 +160,6 @@ public class GameControl
         this.State = GameState.IntendingMove;
     }
     
-    // *** ADDED: Method to get promotion piece choice from player ***
     public PieceType GetPromotionChoice(ColorType color)
     {
         Console.WriteLine($"{color} pawn reached the end! Choose promotion:");
@@ -528,90 +527,89 @@ public class GameControl
     }
 
     public bool IsSquareAttacked(ISquare targetSquare, ColorType attackingColor)
-{
-    foreach (var playerEntry in PlayerPieces)
     {
-        if (playerEntry.Key.GetColor() == attackingColor)
+        foreach (var playerEntry in PlayerPieces)
         {
-            foreach (var attackingPiece in playerEntry.Value)
+            if (playerEntry.Key.GetColor() == attackingColor)
             {
-                if (attackingPiece.GetState() != PieceState.Active) continue;
-
-                var piecePos = attackingPiece.GetCurrentCoordinate();
-                var pieceType = attackingPiece.GetPieceType();
-
-                // Handle each piece type directly to avoid recursion
-                switch (pieceType)
+                foreach (var attackingPiece in playerEntry.Value)
                 {
-                    case PieceType.Pawn:
-                        int direction = (attackingPiece.GetColor() == ColorType.White) ? 1 : -1;
-                        Point attackLeft = new Point { X = piecePos.X - 1, Y = piecePos.Y + direction };
-                        Point attackRight = new Point { X = piecePos.X + 1, Y = piecePos.Y + direction };
+                    if (attackingPiece.GetState() != PieceState.Active) continue;
 
-                        if ((targetSquare.GetPosition().Equals(attackLeft) && attackLeft.IsValid) ||
-                            (targetSquare.GetPosition().Equals(attackRight) && attackRight.IsValid))
-                        {
-                            return true;
-                        }
-                        break;
+                    var piecePos = attackingPiece.GetCurrentCoordinate();
+                    var pieceType = attackingPiece.GetPieceType();
 
-                    case PieceType.King:
-                        // Check if target is within one square of the king (avoid recursion)
-                        int deltaX = Math.Abs(targetSquare.GetPosition().X - piecePos.X);
-                        int deltaY = Math.Abs(targetSquare.GetPosition().Y - piecePos.Y);
-                        if (deltaX <= 1 && deltaY <= 1 && (deltaX != 0 || deltaY != 0))
-                        {
-                            return true;
-                        }
-                        break;
+                    // Handle each piece type directly to avoid recursion
+                    switch (pieceType)
+                    {
+                        case PieceType.Pawn:
+                            int direction = (attackingPiece.GetColor() == ColorType.White) ? 1 : -1;
+                            Point attackLeft = new Point { X = piecePos.X - 1, Y = piecePos.Y + direction };
+                            Point attackRight = new Point { X = piecePos.X + 1, Y = piecePos.Y + direction };
 
-                    case PieceType.Knight:
-                        Point[] knightMoves = {
-                            new Point{ X = 2, Y = 1}, new Point{ X = 2, Y = -1}, 
-                            new Point{ X = -2, Y = 1}, new Point{ X = -2, Y = -1},
-                            new Point{ X = 1, Y = 2}, new Point{ X = 1, Y = -2}, 
-                            new Point{ X = -1, Y = 2}, new Point{ X = -1, Y = -2}
-                        };
-
-                        foreach (var move in knightMoves)
-                        {
-                            var attackPos = new Point { X = piecePos.X + move.X, Y = piecePos.Y + move.Y };
-                            if (attackPos.IsValid && targetSquare.GetPosition().Equals(attackPos))
+                            if ((targetSquare.GetPosition().Equals(attackLeft) && attackLeft.IsValid) ||
+                                (targetSquare.GetPosition().Equals(attackRight) && attackRight.IsValid))
                             {
                                 return true;
                             }
-                        }
-                        break;
+                            break;
 
-                    case PieceType.Rook:
-                        if (IsInLineOfSight(piecePos, targetSquare.GetPosition(), true, false))
-                        {
-                            return true;
-                        }
-                        break;
+                        case PieceType.King:
+                            // Check if target is within one square of the king (avoid recursion)
+                            int deltaX = Math.Abs(targetSquare.GetPosition().X - piecePos.X);
+                            int deltaY = Math.Abs(targetSquare.GetPosition().Y - piecePos.Y);
+                            if (deltaX <= 1 && deltaY <= 1 && (deltaX != 0 || deltaY != 0))
+                            {
+                                return true;
+                            }
+                            break;
 
-                    case PieceType.Bishop:
-                        if (IsInLineOfSight(piecePos, targetSquare.GetPosition(), false, true))
-                        {
-                            return true;
-                        }
-                        break;
+                        case PieceType.Knight:
+                            Point[] knightMoves = {
+                                new Point{ X = 2, Y = 1}, new Point{ X = 2, Y = -1}, 
+                                new Point{ X = -2, Y = 1}, new Point{ X = -2, Y = -1},
+                                new Point{ X = 1, Y = 2}, new Point{ X = 1, Y = -2}, 
+                                new Point{ X = -1, Y = 2}, new Point{ X = -1, Y = -2}
+                            };
 
-                    case PieceType.Queen:
-                        if (IsInLineOfSight(piecePos, targetSquare.GetPosition(), true, true))
-                        {
-                            return true;
-                        }
-                        break;
+                            foreach (var move in knightMoves)
+                            {
+                                var attackPos = new Point { X = piecePos.X + move.X, Y = piecePos.Y + move.Y };
+                                if (attackPos.IsValid && targetSquare.GetPosition().Equals(attackPos))
+                                {
+                                    return true;
+                                }
+                            }
+                            break;
+
+                        case PieceType.Rook:
+                            if (IsInLineOfSight(piecePos, targetSquare.GetPosition(), true, false))
+                            {
+                                return true;
+                            }
+                            break;
+
+                        case PieceType.Bishop:
+                            if (IsInLineOfSight(piecePos, targetSquare.GetPosition(), false, true))
+                            {
+                                return true;
+                            }
+                            break;
+
+                        case PieceType.Queen:
+                            if (IsInLineOfSight(piecePos, targetSquare.GetPosition(), true, true))
+                            {
+                                return true;
+                            }
+                            break;
+                    }
                 }
             }
         }
+        return false;
     }
-    return false;
-}
 
-    // Helper method to check line of sight for sliding pieces
-    private bool IsInLineOfSight(Point from, Point to, bool allowStraight, bool allowDiagonal)
+    private bool IsInLineOfSight(Point from, Point to, bool allowStraight, bool allowDiagonal) 
     {
         int deltaX = to.X - from.X;
         int deltaY = to.Y - from.Y;
@@ -1025,20 +1023,6 @@ public class GameControl
         return legalMoves;
     }
 
-    public void Resign(ColorType resigningPlayerColor)
-    {
-        if (resigningPlayerColor == ColorType.White)
-        {
-            this.State = GameState.Resignation;
-            Console.WriteLine("White has resigned. Black wins!");
-        }
-        else 
-        {
-            this.State = GameState.Resignation;
-            Console.WriteLine("Black has resigned. White wins!");
-        }
-    }
-
     public void HandleMoveDone()
     {
         OnMoveDone?.Invoke();
@@ -1082,11 +1066,18 @@ public class GameControl
         State = GetCurrentPlayer().GetColor() == ColorType.White ? GameState.CheckmateBlackWin : GameState.CheckmateWhiteWin;
     }
 
-    public void HandleResign(int resignedPlayerIndex)
+    public void HandleResign(ColorType resigningPlayerColor)
     {
         OnResign?.Invoke();
-        Console.WriteLine($"Player {Players[resignedPlayerIndex].GetColor()} resigned. Game Over.");
-        State = GameState.Resignation;
+        if (resigningPlayerColor == ColorType.White)
+        {
+            Console.WriteLine("White has resigned. Black wins!");
+        }
+        else 
+        {
+            Console.WriteLine("Black has resigned. White wins!");
+        }
+        this.State = GameState.Resignation;
     }
 
     public void HandleStalemate()

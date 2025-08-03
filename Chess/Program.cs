@@ -39,7 +39,6 @@ namespace ChessGame
                    _gameControl.State != GameState.FiftyMoveDraw && 
                    _gameControl.State != GameState.Resignation)
             {
-                // *** CHANGED: New input flow - first ask for source square ***
                 Console.WriteLine("\nEnter the square of the piece you want to move (e.g., e2), 'resign' to concede, or 'exit' to quit: ");
                 string? input = Console.ReadLine()?.ToLower();
 
@@ -51,7 +50,7 @@ namespace ChessGame
 
                 if (input == "resign")
                 {
-                    _gameControl.Resign(_gameControl.GetCurrentPlayer().GetColor());
+                    _gameControl.HandleResign(_gameControl.GetCurrentPlayer().GetColor());
                     break; 
                 }
                 
@@ -83,7 +82,6 @@ namespace ChessGame
                             continue;
                         }
 
-                        // Display board with highlighted legal moves
                         DisplayBoardWithLegalMoves(_gameControl.CurrentLegalMoves);
                         
                         Console.WriteLine($"Legal moves are highlighted in green.");
@@ -115,11 +113,9 @@ namespace ChessGame
 
                         ISquare destSquare = _gameControl.Board.GetSquare(destCoord.Value);
                         
-                        // Check if the destination is a legal move
                         if (!_gameControl.CurrentLegalMoves.Contains(destSquare))
                         {
                             Console.WriteLine("Invalid move. Please enter a valid destination from the highlighted squares.");
-                            // Don't cancel move, let them try again
                             continue;
                         }
 
@@ -208,14 +204,6 @@ namespace ChessGame
             return null; 
         }
 
-        // *** ADDED: Method to convert coordinates back to algebraic notation ***
-        private string CoordinateToAlgebraic(Point coord)
-        {
-            char file = (char)('a' + coord.X);
-            char rank = (char)('1' + coord.Y);
-            return $"{file}{rank}";
-        }
-
         private void DisplayBoard()
         {
             Console.Clear();
@@ -264,12 +252,11 @@ namespace ChessGame
             Console.ResetColor();
         }
 
-        // *** ADDED: Method to display board with highlighted legal moves ***
         private void DisplayBoardWithLegalMoves(List<ISquare> legalMoves)
         {
             Console.Clear();
-            Console.OutputEncoding = System.Text.Encoding.UTF8; 
-            
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
+
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("\n    a  b  c  d  e  f  g  h ");
             Console.WriteLine("   -------------------------");
@@ -281,11 +268,11 @@ namespace ChessGame
                 {
                     ISquare square = _gameControl.Board.GetSquare(new Point { X = x, Y = y });
                     bool isLegalMove = legalMoves.Contains(square);
-                    
+
                     ConsoleColor backgroundColor;
                     if (isLegalMove)
                     {
-                        backgroundColor = ConsoleColor.Green; // *** Highlight legal moves in green ***
+                        backgroundColor = ConsoleColor.Green; 
                     }
                     else
                     {
@@ -294,7 +281,7 @@ namespace ChessGame
                     Console.BackgroundColor = backgroundColor;
 
                     IPiece? piece = square.GetPiece();
-                    
+
                     string cellContent;
                     if (piece == null)
                     {
@@ -315,16 +302,16 @@ namespace ChessGame
 
                         cellContent = $" {pieceChar} ";
                     }
-                    
+
                     Console.Write(cellContent);
 
                     Console.ResetColor();
                 }
-                
+
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine($"| {y + 1}");
             }
-            
+
             Console.WriteLine("   -------------------------");
             Console.WriteLine("    a  b  c  d  e  f  g  h \n");
             Console.ResetColor();
