@@ -61,7 +61,7 @@ namespace ChessGame
                     break;
                 }
 
-                Point? sourceCoord = ParseCoordinate(input);
+                Point? sourceCoord = _gameControl.ParseAlgebraicNotation(input);
                 if (sourceCoord == null)
                 {
                     Console.WriteLine("Invalid coordinate format. Use 'a1' to 'h8'.");
@@ -104,7 +104,7 @@ namespace ChessGame
                             continue;
                         }
 
-                        Point? destCoord = ParseCoordinate(destInput);
+                        Point? destCoord = _gameControl.ParseAlgebraicNotation(destInput);
                         if (destCoord == null)
                         {
                             Console.WriteLine("Invalid coordinate format. Use 'a1' to 'h8'.");
@@ -166,43 +166,6 @@ namespace ChessGame
                     Console.WriteLine("Game ended unexpectedly.");
                     break;
             }
-        }
-
-        private Point? ParseCoordinate(string algebraicCoord)
-        {
-            if (string.IsNullOrWhiteSpace(algebraicCoord) || algebraicCoord.Length != 2)
-                return null;
-
-            char fileChar = algebraicCoord[0];
-            char rankChar = algebraicCoord[1];
-
-            int x = -1; 
-            int y = -1;
-
-            if (fileChar >= 'a' && fileChar <= 'h')
-            {
-                x = fileChar - 'a'; 
-            }
-            else
-            {
-                return null;
-            }
-
-            if (char.IsDigit(rankChar))
-            {
-                y = int.Parse(rankChar.ToString()) - 1; 
-            }
-            else
-            {
-                return null;
-            }
-
-            if (x >= 0 && x <= 7 && y >= 0 && y <= 7)
-            {
-                return new Point { X = x, Y = y };
-            }
-
-            return null; 
         }
 
         private void DisplayBoard()
@@ -386,7 +349,6 @@ namespace ChessGame
             Console.WriteLine("Stalemate condition met!");
         }
 
-        // FIXED: This handler now accepts ColorType parameter
         private void GameControl_OnResign(ColorType resigningPlayerColor)
         {
             if (resigningPlayerColor == ColorType.White)

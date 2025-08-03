@@ -82,10 +82,40 @@ public class GameControl
         this.LastMovedPiece = null;
     }
 
-    // Moved from Point struct to GameControl for better encapsulation
+    // CENTRALIZED COORDINATE/NOTATION UTILITIES
     public bool IsValidCoordinate(Point coordinate)
     {
         return coordinate.X >= 0 && coordinate.X < BOARD_SIZE && coordinate.Y >= 0 && coordinate.Y < BOARD_SIZE;
+    }
+
+    public string ToAlgebraicNotation(Point coordinate)
+    {
+        if (!IsValidCoordinate(coordinate))
+            return "invalid";
+            
+        char file = (char)('a' + coordinate.X);
+        char rank = (char)('1' + coordinate.Y);
+        return $"{file}{rank}";
+    }
+
+    public Point? ParseAlgebraicNotation(string algebraicCoord)
+    {
+        if (string.IsNullOrWhiteSpace(algebraicCoord) || algebraicCoord.Length != 2)
+            return null;
+
+        char fileChar = algebraicCoord[0];
+        char rankChar = algebraicCoord[1];
+
+        if (fileChar < 'a' || fileChar > 'h' || !char.IsDigit(rankChar))
+            return null;
+
+        int x = fileChar - 'a';
+        int y = int.Parse(rankChar.ToString()) - 1;
+
+        if (IsValidCoordinate(new Point { X = x, Y = y }))
+            return new Point { X = x, Y = y };
+
+        return null;
     }
 
     public void InitGame()
@@ -763,105 +793,26 @@ public class GameControl
     private bool IsMoveLegal(ISquare sourceSquare, ISquare destSquare, IPiece pieceToMove)
     {
         // Save original state
-        var gameState = SaveGameState(sourceSquare, destSquare);
+        var originalPieceAtDest = destSquare.GetPiece();
+        var originalCoord = pieceToMove.GetCurrentCoordinate();
+        var originalHasMoved = pieceToMove.GetHasMoved();
         
         // Make temporary move
-        MakeTemporaryMove(sourceSquare, destSquare, pieceToMove);
+        sourceSquare.SetPiece(null);
+        destSquare.SetPiece(pieceToMove);
+        pieceToMove.SetCurrentCoordinate(destSquare.GetPosition());
+        pieceToMove.SetHasMoved(true);
         
         // Check if king is in check after the move
         bool isLegal = !IsKingInCheck(pieceToMove.GetColor());
         
         // Restore original state
-        RestoreGameState(gameState);
+        sourceSquare.SetPiece(pieceToMove);
+        destSquare.SetPiece(originalPieceAtDest);
+        pieceToMove.SetCurrentCoordinate(originalCoord);
+        pieceToMove.SetHasMoved(originalHasMoved);
         
         return isLegal;
-    }
-
-    private GameStateSnapshot SaveGameState(ISquare sourceSquare, ISquare destSquare)
-    {
-        var originalPieceAtSource = sourceSquare.GetPiece();
-        var originalPieceAtDest = destSquare.GetPiece();
-        
-        return new GameStateSnapshot
-        {
-            SourceSquare = sourceSquare,
-            DestSquare = destSquare,
-            OriginalPieceAtSource = originalPieceAtSource,
-            OriginalPieceAtDest = originalPieceAtDest,
-            OriginalPieceCurrentCoord = originalPieceAtSource?.GetCurrentCoordinate() ?? new Point(),
-            OriginalPieceHasMoved = originalPieceAtSource?.GetHasMoved() ?? false
-        };
-    }
-
-    private void MakeTemporaryMove(ISquare sourceSquare, ISquare destSquare, IPiece pieceToMove)
-    {
-        sourceSquare.SetPiece(null);
-        destSquare.SetPiece(pieceToMove);
-        pieceToMove.SetCurrentCoordinate(destSquare.GetPosition());
-        pieceToMove.SetHasMoved(true);
-
-        // Handle castling simulation
-        if (IsCastlingMove(pieceToMove, sourceSquare, destSquare))
-        {
-            SimulateCastlingMove(sourceSquare, destSquare);
-        }
-    }
-
-    private void SimulateCastlingMove(ISquare sourceSquare, ISquare destSquare)
-    {
-        bool isKingSide = destSquare.GetPosition().X > sourceSquare.GetPosition().X;
-        int rookSourceX = isKingSide ? 7 : 0;
-        int rookDestX = isKingSide ? sourceSquare.GetPosition().X + 1 : sourceSquare.GetPosition().X - 1;
-
-        var rookSourceSquare = Board.GetSquare(new Point { X = rookSourceX, Y = sourceSquare.GetPosition().Y });
-        var rookDestSquare = Board.GetSquare(new Point { X = rookDestX, Y = sourceSquare.GetPosition().Y });
-
-        var rook = rookSourceSquare.GetPiece();
-        if (rook != null)
-        {
-            rookSourceSquare.SetPiece(null);
-            rookDestSquare.SetPiece(rook);
-            rook.SetCurrentCoordinate(rookDestSquare.GetPosition());
-            rook.SetHasMoved(true);
-        }
-    }
-
-    private void RestoreGameState(GameStateSnapshot snapshot)
-    {
-        snapshot.SourceSquare.SetPiece(snapshot.OriginalPieceAtSource);
-        snapshot.DestSquare.SetPiece(snapshot.OriginalPieceAtDest);
-        
-        if (snapshot.OriginalPieceAtSource != null)
-        {
-            snapshot.OriginalPieceAtSource.SetCurrentCoordinate(snapshot.OriginalPieceCurrentCoord);
-            snapshot.OriginalPieceAtSource.SetHasMoved(snapshot.OriginalPieceHasMoved);
-        }
-
-        // Restore castling if it was simulated
-        RestoreCastlingSimulation(snapshot);
-    }
-
-    private void RestoreCastlingSimulation(GameStateSnapshot snapshot)
-    {
-        if (snapshot.OriginalPieceAtSource?.GetPieceType() == PieceType.King &&
-            Math.Abs(snapshot.SourceSquare.GetPosition().X - snapshot.DestSquare.GetPosition().X) == 2)
-        {
-            bool isKingSide = snapshot.DestSquare.GetPosition().X > snapshot.SourceSquare.GetPosition().X;
-            int rookSourceX = isKingSide ? 7 : 0;
-            int rookDestX = isKingSide ? snapshot.SourceSquare.GetPosition().X + 1 : snapshot.SourceSquare.GetPosition().X - 1;
-
-            var rookSourceSquare = Board.GetSquare(new Point { X = rookSourceX, Y = snapshot.SourceSquare.GetPosition().Y });
-            var rookDestSquare = Board.GetSquare(new Point { X = rookDestX, Y = snapshot.SourceSquare.GetPosition().Y });
-
-            var rook = rookDestSquare.GetPiece();
-            if (rook != null)
-            {
-                rookDestSquare.SetPiece(null);
-                rookSourceSquare.SetPiece(rook);
-                rook.SetCurrentCoordinate(rookSourceSquare.GetPosition());
-                rook.SetHasMoved(false); // Assume rook hasn't moved for castling to be possible
-            }
-        }
     }
 
     public List<ISquare> GetAllPiecesLegalMoves(ColorType color)
@@ -1040,16 +991,5 @@ public class GameControl
     {
         this.State = GameState.Stalemate;
         OnStalemate?.Invoke();
-    }
-
-    // Helper class for game state management
-    private class GameStateSnapshot
-    {
-        public ISquare SourceSquare { get; set; } = null!;
-        public ISquare DestSquare { get; set; } = null!;
-        public IPiece? OriginalPieceAtSource { get; set; }
-        public IPiece? OriginalPieceAtDest { get; set; }
-        public Point OriginalPieceCurrentCoord { get; set; }
-        public bool OriginalPieceHasMoved { get; set; }
     }
 }
