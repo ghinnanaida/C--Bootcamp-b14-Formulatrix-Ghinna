@@ -24,6 +24,7 @@ namespace ChessGame
             _gameControl.OnCheck += GameControl_OnCheck;
             _gameControl.OnCheckmate += GameControl_OnCheckmate;
             _gameControl.OnStalemate += GameControl_OnStalemate;
+            _gameControl.OnResign += GameControl_OnResign; 
         }
 
         public void Run()
@@ -287,7 +288,7 @@ namespace ChessGame
                     {
                         if (isLegalMove)
                         {
-                            cellContent = " • "; // *** Show dot for empty legal move squares ***
+                            cellContent = " • "; 
                         }
                         else
                         {
@@ -344,6 +345,7 @@ namespace ChessGame
             return pieceChar;
         }
 
+        // ===== EVENT HANDLERS - THESE HANDLE THE UI MESSAGES =====
         private void GameControl_OnMoveDone()
         {
             Console.WriteLine("Move successful!");
@@ -382,6 +384,19 @@ namespace ChessGame
         private void GameControl_OnStalemate()
         {
             Console.WriteLine("Stalemate condition met!");
+        }
+
+        // FIXED: This handler now accepts ColorType parameter
+        private void GameControl_OnResign(ColorType resigningPlayerColor)
+        {
+            if (resigningPlayerColor == ColorType.White)
+            {
+                Console.WriteLine("White has resigned. Black wins!");
+            }
+            else 
+            {
+                Console.WriteLine("Black has resigned. White wins!");
+            }
         }
 
         public static void Main(string[] args)

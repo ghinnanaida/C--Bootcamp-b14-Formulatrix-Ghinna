@@ -26,7 +26,7 @@ public class GameControl
     public event Action<IPiece>? OnEnPassant;
     public event Action<IPiece>? OnPawnPromotion;
     public event Action? OnCheckmate;
-    public event Action? OnResign;
+    public event Action<ColorType>? OnResign; 
     public event Action? OnStalemate;
     public event Action? OnCheck;
 
@@ -304,13 +304,12 @@ public class GameControl
 
             if (destinationSquare.GetPosition().Y == promotionRank)
             {
-                // *** CHANGED: Ask player for promotion choice instead of auto-queen ***
                 PieceType promotionType = GetPromotionChoice(pieceToMove.GetColor());
                 
                 IPiece newPromotedPiece = new Piece(
                     pieceToMove.GetColor(),
                     PieceState.Active,
-                    promotionType, // *** CHANGED: Use player's choice ***
+                    promotionType,
                     destinationSquare.GetPosition() 
                 );
 
@@ -333,9 +332,7 @@ public class GameControl
         this.LastMoveDestination = destinationSquare;
         this.LastMovedPiece = pieceToMove; 
 
-
         HandleMoveDone(); 
-
 
         var currentPlayer = Players[_currentPlayerIndex];
         if (capturedPiece != null || isEnPassantMove || pieceToMove.GetPieceType() == PieceType.Pawn)
@@ -394,7 +391,6 @@ public class GameControl
             {
                 State = GameState.FiftyMoveDraw; 
                 HandleStalemate(); 
-                Console.WriteLine("Draw by 50-move rule!"); 
             }
             else
             {
@@ -937,7 +933,6 @@ public class GameControl
             }
         }
 
-        // *** ADDED: Castling logic for King moves ***
         IPiece? king = Board.GetSquare(position).GetPiece();
         if (king != null && !king.GetHasMoved() && !IsKingInCheck(pieceColor))
         {
@@ -1026,64 +1021,49 @@ public class GameControl
     public void HandleMoveDone()
     {
         OnMoveDone?.Invoke();
-        Console.WriteLine("Move done.");
     }
     
     public void HandleCapturePiece(IPiece capturedPiece)
     {
         OnCapturePiece?.Invoke(capturedPiece);
-        Console.WriteLine($"Piece captured: {capturedPiece.GetPieceType()} {capturedPiece.GetColor()}");
     }
 
     public void HandleCastling(IPiece king, IPiece rook)
     {
         OnCastling?.Invoke(king, rook);
-        Console.WriteLine($"Castling performed with king {king.GetColor()} and rook {rook.GetColor()}");
     }
     
     public void HandleEnPassant(IPiece capturedPawn)
     {
         OnEnPassant?.Invoke(capturedPawn);
-        Console.WriteLine($"En passant performed, captured pawn: {capturedPawn.GetColor()}");
     }
     
     public void HandlePawnPromotion(IPiece pawn)
     {
         OnPawnPromotion?.Invoke(pawn);
-        Console.WriteLine($"Pawn promoted: {pawn.GetColor()} {pawn.GetPieceType()}");
     }
 
     public void HandleCheck()
     {
         OnCheck?.Invoke();
-        Console.WriteLine($"Check! {GetCurrentPlayer().GetColor()} king is in check.");
     }
 
     public void HandleCheckmate()
     {
+        ColorType currentPlayerColor = GetCurrentPlayer().GetColor();
+        this.State = currentPlayerColor == ColorType.White ? GameState.CheckmateBlackWin : GameState.CheckmateWhiteWin;
         OnCheckmate?.Invoke();
-        Console.WriteLine("Checkmate! Game Over.");
-        State = GetCurrentPlayer().GetColor() == ColorType.White ? GameState.CheckmateBlackWin : GameState.CheckmateWhiteWin;
     }
 
     public void HandleResign(ColorType resigningPlayerColor)
     {
-        OnResign?.Invoke();
-        if (resigningPlayerColor == ColorType.White)
-        {
-            Console.WriteLine("White has resigned. Black wins!");
-        }
-        else 
-        {
-            Console.WriteLine("Black has resigned. White wins!");
-        }
         this.State = GameState.Resignation;
+        OnResign?.Invoke(resigningPlayerColor);
     }
 
     public void HandleStalemate()
     {
+        this.State = GameState.Stalemate;
         OnStalemate?.Invoke();
-        Console.WriteLine("Draw! Game Over.");
-        State = GameState.Stalemate;
     }
 }
