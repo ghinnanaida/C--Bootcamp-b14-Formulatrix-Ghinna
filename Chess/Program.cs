@@ -24,6 +24,7 @@ namespace ChessGame
             _gameControl.OnCheck += GameControl_OnCheck;
             _gameControl.OnCheckmate += GameControl_OnCheckmate;
             _gameControl.OnStalemate += GameControl_OnStalemate;
+            _gameControl.OnDraw += GameControl_OnDraw;
             _gameControl.OnResign += GameControl_OnResign; 
         }
 
@@ -124,6 +125,7 @@ namespace ChessGame
                         if (moveSuccessful)
                         {
                             DisplayBoard(); 
+                            Console.WriteLine($"Count : {_gameControl.GetCurrentPlayer().GetMoveCountNoCaptureNoPromotion()}");
                             Console.WriteLine($"{_gameControl.GetCurrentPlayer().GetColor()} to move.");
                         }
                         else
@@ -347,6 +349,11 @@ namespace ChessGame
         private void GameControl_OnStalemate()
         {
             Console.WriteLine("Stalemate condition met!");
+        }
+
+        private void GameControl_OnDraw()
+        {
+            Console.WriteLine("Draw by fifty move rule");
         }
 
         private void GameControl_OnResign(ColorType resigningPlayerColor)

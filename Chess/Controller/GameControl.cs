@@ -7,11 +7,9 @@ namespace ChessGame.Controllers;
 
 public class GameControl
 {
-    // Constants for better maintainability
     private const int BOARD_SIZE = 8;
-    private const int FIFTY_MOVE_RULE_LIMIT = 100; // 50 moves = 100 half-moves
+    private const int FIFTY_MOVE_RULE_LIMIT = 3; 
     
-    // Direction arrays for piece movement (cached for performance)
     private static readonly Point[] RookDirections = { 
         new Point { X = 0, Y = 1 }, new Point { X = 0, Y = -1 }, 
         new Point { X = 1, Y = 0 }, new Point { X = -1, Y = 0 } 
@@ -53,6 +51,7 @@ public class GameControl
     public event Action? OnCheckmate;
     public event Action<ColorType>? OnResign;
     public event Action? OnStalemate;
+    public event Action? OnDraw;
     public event Action? OnCheck;
 
     public GameControl()
@@ -82,7 +81,6 @@ public class GameControl
         this.LastMovedPiece = null;
     }
 
-    // CENTRALIZED COORDINATE/NOTATION UTILITIES
     public bool IsValidCoordinate(Point coordinate)
     {
         return coordinate.X >= 0 && coordinate.X < BOARD_SIZE && coordinate.Y >= 0 && coordinate.Y < BOARD_SIZE;
@@ -120,7 +118,6 @@ public class GameControl
 
     public void InitGame()
     {
-        // Clear existing pieces
         foreach (var playerPieces in PlayerPieces.Values)
         {
             playerPieces.Clear();
@@ -141,12 +138,10 @@ public class GameControl
 
         for (int i = 0; i < BOARD_SIZE; i++)
         {
-            // White pawns
             var whitePawn = new Piece(ColorType.White, PieceState.Active, PieceType.Pawn, new Point { X = i, Y = whitePawnRank });
             this.Board.SetSquare(new Point { X = i, Y = whitePawnRank }, whitePawn);
             PlayerPieces[Players[0]].Add(whitePawn);
 
-            // Black pawns
             var blackPawn = new Piece(ColorType.Black, PieceState.Active, PieceType.Pawn, new Point { X = i, Y = blackPawnRank });
             this.Board.SetSquare(new Point { X = i, Y = blackPawnRank }, blackPawn);
             PlayerPieces[Players[1]].Add(blackPawn);
@@ -470,25 +465,21 @@ public class GameControl
             if (legalMovesCount == 0)
             {
                 var currentPlayerColor = currentPlayer.GetColor();
-                this.State = currentPlayerColor == ColorType.White ? GameState.CheckmateBlackWin : GameState.CheckmateWhiteWin;
                 HandleCheckmate();
             }
             else
             {
-                this.State = GameState.Check;
                 HandleCheck();
             }
         }
         else
         {
-            if (legalMovesCount == 0)
+            if (currentPlayer.GetMoveCountNoCaptureNoPromotion() >= FIFTY_MOVE_RULE_LIMIT)
             {
-                this.State = GameState.Stalemate;
-                HandleStalemate();
+                HandleFiftyMoveDraw();
             }
-            else if (currentPlayer.GetMoveCountNoCaptureNoPromotion() >= FIFTY_MOVE_RULE_LIMIT)
+            else if (legalMovesCount == 0)
             {
-                this.State = GameState.FiftyMoveDraw;
                 HandleStalemate();
             }
         }
@@ -972,7 +963,11 @@ public class GameControl
     public void HandleCastling(IPiece king, IPiece rook) => OnCastling?.Invoke(king, rook);
     public void HandleEnPassant(IPiece capturedPawn) => OnEnPassant?.Invoke(capturedPawn);
     public void HandlePawnPromotion(IPiece pawn) => OnPawnPromotion?.Invoke(pawn);
-    public void HandleCheck() => OnCheck?.Invoke();
+    public void HandleCheck() 
+    {
+        this.State = GameState.Check;
+        OnCheck?.Invoke();
+    }
 
     public void HandleCheckmate()
     {
@@ -991,5 +986,11 @@ public class GameControl
     {
         this.State = GameState.Stalemate;
         OnStalemate?.Invoke();
+    }
+
+    public void HandleFiftyMoveDraw()
+    {
+        this.State = GameState.FiftyMoveDraw;
+        OnDraw?.Invoke();
     }
 }
