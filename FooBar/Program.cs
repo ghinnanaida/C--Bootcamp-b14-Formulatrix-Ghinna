@@ -3,20 +3,60 @@ using System.Text;
 
 class Program
 {
-
     static void Main()
     {
         int number = 40;
-        FooBarJazzLooping1(number);
-        FooBarJazzLooping2(number);
-        FooBarJazzUseDelegates(number);
-        FooBarJazzUseDictionary(number);
+
+        var generator = new FooBarJazz();
+
+        generator.AddRule(3, "foo");
+        generator.AddRule(4, "baz");
+        generator.AddRule(5, "bar");
+        generator.AddRule(7, "jazz");
+        generator.AddRule(9, "huzz");
+
+        generator.Generate(number);
+
+        // FooBarJazzLooping1(number);
+        // FooBarJazzLooping2(number);
+        // FooBarJazzUseDelegates(number);
+        // FooBarJazzUseDictionary(number);
     }
 
+    public class FooBarJazz
+    {
+        private Dictionary<int, string> _ruleMap = new Dictionary<int, string>();
+        public void AddRule(int divisor, string output)
+        {
+            if (divisor <= 0)
+            {
+                throw new ArgumentException("Divisor must be > 0", nameof(divisor));
+            }
+            _ruleMap[divisor] = output;
+        }
+
+        public void Generate(int number)
+        {
+            var results = new List<string>();
+            for (int num = 1; num <= number; num++)
+            {
+                var result = new StringBuilder();
+
+                foreach (var rule in _ruleMap)
+                {
+                    result.Append(num % rule.Key == 0 ? rule.Value : "");
+                }
+                results.Add(result.Length == 0 ? num.ToString() : result.ToString());
+            }
+            Console.WriteLine(string.Join(", ", results));
+        }
+    }
+
+    #region Old Logic Exercise
     static void FooBarJazzUseDictionary(int number)
     {
         Console.WriteLine("\n\nFooBarJazz use dictionary looping for rules..");
-            
+
         Dictionary<int, string> ruleMap = new Dictionary<int, string>
         {
             {3,"foo"},
@@ -25,7 +65,7 @@ class Program
             {7,"jazz"},
             {9,"huzz"},
         };
-        
+
         void Rules(int num, int denominator, string word, StringBuilder sb) => sb.Append(num % denominator == 0 ? word : "");
 
         for (int num = 1; num <= number; num++)
@@ -51,7 +91,6 @@ class Program
 
     }
     delegate void Rules(int num, StringBuilder sb);
-
     static void FooBarJazzUseDelegates(int number)
     {
         Console.WriteLine("\n\nFooBarJazz using delegates implementation..");
@@ -84,7 +123,6 @@ class Program
                 Console.Write(", ");
         }
     }
-
     static void FooBarJazzLooping1(int number)
     {
         Console.WriteLine("\n\nFooBarJazz only looping with StringBuilder Append..");
@@ -92,21 +130,20 @@ class Program
         for (int num = 1; num <= number; num++)
         {
             StringBuilder result = new StringBuilder();
-            
+
             if (num % 3 == 0) result.Append("foo");
             if (num % 4 == 0) result.Append("baz");
             if (num % 5 == 0) result.Append("bar");
             if (num % 7 == 0) result.Append("jazz");
             if (num % 9 == 0) result.Append("huzz");
             if (result.Length == 0) result.Append(num);
-               
+
             Console.Write(result);
 
             if (num != number)
                 Console.Write(", ");
         }
     }
-
     static void FooBarJazzLooping2(int number)
     {
         Console.WriteLine("\n\nFooBarJazz only looping through if conditional..");
@@ -128,7 +165,8 @@ class Program
             if (num != number)
                 Console.Write(", ");
         }
-    }  
+    }
+    #endregion
 }
 
 
