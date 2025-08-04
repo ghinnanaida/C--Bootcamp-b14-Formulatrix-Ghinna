@@ -8,11 +8,12 @@ namespace ChessGame.Controllers;
 public class GameControl
 {
     private const int BOARD_SIZE = 8;
-    private const int FIFTY_MOVE_RULE_LIMIT = 3; 
+    private const int FIFTY_MOVE_RULE_LIMIT = 100; 
+    private int _fiftyMoveCounter;
     
-    private static readonly Point[] RookDirections = { 
-        new Point { X = 0, Y = 1 }, new Point { X = 0, Y = -1 }, 
-        new Point { X = 1, Y = 0 }, new Point { X = -1, Y = 0 } 
+    private static readonly Point[] RookDirections = {
+        new Point { X = 0, Y = 1 }, new Point { X = 0, Y = -1 },
+        new Point { X = 1, Y = 0 }, new Point { X = -1, Y = 0 }
     };
     
     private static readonly Point[] BishopDirections = { 
@@ -74,6 +75,7 @@ public class GameControl
     {
         this.State = GameState.Init;
         this._currentPlayerIndex = 0;
+        this._fiftyMoveCounter = 0;
         this._intendedSquareSource = null;
         this.CurrentLegalMoves = null;
         this.LastMoveSource = null;
@@ -429,11 +431,11 @@ public class GameControl
         var currentPlayer = Players[_currentPlayerIndex];
         if (isCapture || pieceToMove.GetPieceType() == PieceType.Pawn)
         {
-            currentPlayer.SetMoveCountNoCaptureNoPromotion(0);
+            this._fiftyMoveCounter = 0;
         }
         else
         {
-            currentPlayer.SetMoveCountNoCaptureNoPromotion(currentPlayer.GetMoveCountNoCaptureNoPromotion() + 1);
+            this._fiftyMoveCounter += 1;
         }
     }
 
@@ -474,7 +476,7 @@ public class GameControl
         }
         else
         {
-            if (currentPlayer.GetMoveCountNoCaptureNoPromotion() >= FIFTY_MOVE_RULE_LIMIT)
+            if (this._fiftyMoveCounter >= FIFTY_MOVE_RULE_LIMIT)
             {
                 HandleFiftyMoveDraw();
             }
