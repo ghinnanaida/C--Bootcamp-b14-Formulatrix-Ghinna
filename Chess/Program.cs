@@ -125,7 +125,6 @@ namespace ChessGame
                         if (moveSuccessful)
                         {
                             DisplayBoard(); 
-                            Console.WriteLine($"Count : {_gameControl.GetCurrentPlayer().GetMoveCountNoCaptureNoPromotion()}");
                             Console.WriteLine($"{_gameControl.GetCurrentPlayer().GetColor()} to move.");
                         }
                         else

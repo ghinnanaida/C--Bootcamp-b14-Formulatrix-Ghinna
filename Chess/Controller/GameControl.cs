@@ -8,7 +8,7 @@ namespace ChessGame.Controllers;
 public class GameControl
 {
     private const int BOARD_SIZE = 8;
-    private const int FIFTY_MOVE_RULE_LIMIT = 100; 
+    private const int FIFTY_MOVE_RULE_LIMIT = 4; 
     private int _fiftyMoveCounter;
     
     private static readonly Point[] RookDirections = {
@@ -247,15 +247,16 @@ public class GameControl
         IPiece pieceToMove = this._intendedSquareSource!.GetPiece()!;
         ISquare sourceSquare = this._intendedSquareSource;
 
+        // Update game state
+        UpdateMoveHistory(sourceSquare, destinationSquare, pieceToMove);
+        UpdateFiftyMoveRule(pieceToMove.GetPieceType(), destinationSquare.GetPiece() != null);
+
         // Handle special moves
         HandleSpecialMoves(pieceToMove, sourceSquare, destinationSquare);
 
         // Move the piece
         MovePiece(sourceSquare, destinationSquare, pieceToMove);
 
-        // Update game state
-        UpdateMoveHistory(sourceSquare, destinationSquare, pieceToMove);
-        UpdateFiftyMoveRule(pieceToMove, destinationSquare.GetPiece() != null);
 
         HandleMoveDone();
         NextTurn();
@@ -426,10 +427,10 @@ public class GameControl
         this.LastMovedPiece = pieceToMove;
     }
 
-    private void UpdateFiftyMoveRule(IPiece pieceToMove, bool isCapture)
+    private void UpdateFiftyMoveRule(PieceType pieceToMoveType, bool isCapture)
     {
-        var currentPlayer = Players[_currentPlayerIndex];
-        if (isCapture || pieceToMove.GetPieceType() == PieceType.Pawn)
+        // Console.WriteLine($"counter = {this._fiftyMoveCounter.ToString()}, and isCapture {isCapture.ToString()}");
+        if (isCapture || pieceToMoveType == PieceType.Pawn)
         {
             this._fiftyMoveCounter = 0;
         }
