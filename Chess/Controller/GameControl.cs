@@ -185,7 +185,7 @@ public class GameControl
 
         this._intendedSquareSource = sourceSquare;
         this.State = GameState.MakingMove;
-        this.CurrentLegalMoves = AllLegalMoves.TryGetValue(piece!, out var moves) ? moves : null;
+        this.CurrentLegalMoves = AllLegalMoves!.TryGetValue(piece!, out var moves) ? moves : null;
     }
 
     private bool CanIntendMove()
