@@ -11,6 +11,7 @@ namespace ChessGame
     public class Program
     {
         private GameControl _gameControl;
+        private string _lastGameMessage = "";
 
         public Program()
         {
@@ -215,6 +216,21 @@ namespace ChessGame
             Console.WriteLine("   -------------------------");
             Console.WriteLine("    a  b  c  d  e  f  g  h \n");
             Console.ResetColor();
+
+            if (_gameControl.LastMoveSource != null && _gameControl.LastMoveDestination != null)
+            {
+                string sourceNotation = _gameControl.CoordinateToAlgebraic(_gameControl.LastMoveSource.GetPosition());
+                string destNotation = _gameControl.CoordinateToAlgebraic(_gameControl.LastMoveDestination.GetPosition());
+                string pieceType = _gameControl.LastMovedPiece?.GetPieceType().ToString() ?? "Piece";
+                
+                Console.WriteLine($"Last move: {pieceType} {sourceNotation} → {destNotation}");
+            }
+            
+            if (!string.IsNullOrEmpty(_lastGameMessage))
+            {
+                Console.WriteLine($"{_lastGameMessage}");
+            }
+
         }
 
         private void DisplayBoardWithLegalMoves(List<ISquare> legalMoves)
@@ -303,67 +319,66 @@ namespace ChessGame
                     pieceChar = (piece.GetColor() == ColorType.White) ? "\u2658" : "\u265e"; 
                     break;
                 case PieceType.Pawn:
-                    pieceChar = (piece.GetColor() == ColorType.White) ? "\u2659" : "\u265f"; 
+                    pieceChar = "\u2659"; 
                     break;
             }
             return pieceChar;
         }
 
-        // ===== EVENT HANDLERS - THESE HANDLE THE UI MESSAGES =====
         private void GameControl_OnMoveDone()
         {
-            Console.WriteLine("Move successful!");
+            _lastGameMessage = "Move successful!";
         }
 
         private void GameControl_OnCapturePiece(IPiece capturedPiece)
         {
-            Console.WriteLine($"A {capturedPiece.GetColor()} {capturedPiece.GetPieceType()} was captured!");
+            _lastGameMessage = $"A {capturedPiece.GetColor()} {capturedPiece.GetPieceType()} was captured!";
         }
 
         private void GameControl_OnCastling(IPiece king, IPiece rook)
         {
-            Console.WriteLine($"{king.GetColor()} King and Rook castled!");
+            _lastGameMessage = $"{king.GetColor()} King and Rook castled!";
         }
 
         private void GameControl_OnEnPassant(IPiece capturedPawn)
         {
-            Console.WriteLine($"{capturedPawn.GetColor()} pawn captured via En Passant!");
+            _lastGameMessage = $"{capturedPawn.GetColor()} pawn captured via En Passant!";
         }
         
         private void GameControl_OnPawnPromotion(IPiece promotedPiece)
         {
-            Console.WriteLine($"{promotedPiece.GetColor()} pawn promoted to {promotedPiece.GetPieceType()}!");
+            _lastGameMessage = $"{promotedPiece.GetColor()} pawn promoted to {promotedPiece.GetPieceType()}!";
         }
 
         private void GameControl_OnCheck()
         {
-            Console.WriteLine($"CHECK! {_gameControl.GetCurrentPlayer().GetColor()} king is under attack!");
+            _lastGameMessage = $"CHECK! {_gameControl.GetCurrentPlayer().GetColor()} king is under attack!";
         }
 
         private void GameControl_OnCheckmate()
         {
-            Console.WriteLine("Checkmate condition met!");
+            _lastGameMessage = "Checkmate condition met!";
         }
 
         private void GameControl_OnStalemate()
         {
-            Console.WriteLine("Stalemate condition met!");
+            _lastGameMessage = "Stalemate condition met!";
         }
 
         private void GameControl_OnDraw()
         {
-            Console.WriteLine("Draw by fifty move rule");
+            _lastGameMessage = "Draw by fifty move rule";
         }
 
         private void GameControl_OnResign(ColorType resigningPlayerColor)
         {
             if (resigningPlayerColor == ColorType.White)
             {
-                Console.WriteLine("White has resigned. Black wins!");
+                _lastGameMessage = "White has resigned. Black wins!";
             }
             else 
             {
-                Console.WriteLine("Black has resigned. White wins!");
+                _lastGameMessage = "Black has resigned. White wins!";
             }
         }
 
