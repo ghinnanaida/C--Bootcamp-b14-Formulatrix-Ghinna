@@ -348,7 +348,8 @@ namespace ChessGame
                     pieceChar = (piece.GetColor() == ColorType.White) ? "\u2658" : "\u265e"; 
                     break;
                 case PieceType.Pawn:
-                    pieceChar = "\u2659"; 
+                    pieceChar = (piece.GetColor() == ColorType.White) ? "\u2659" : "\u265F"; 
+                    // pieceChar = "\u2659"; 
                     break;
             }
             return pieceChar;
