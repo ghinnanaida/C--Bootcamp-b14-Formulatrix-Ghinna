@@ -6,6 +6,7 @@ using ChessGame.Enumerations;
 using ChessGame.Interfaces;
 using ChessGame.RecordStructs;
 using ChessGame.Models; 
+using ChessGame.Testing;
 
 namespace ChessGame
 {
@@ -43,8 +44,7 @@ namespace ChessGame
                    _gameControl.State != GameState.FiftyMoveDraw && 
                    _gameControl.State != GameState.Resignation)
             {
-                // Display movable pieces list
-                var movablePieces = GetMovablePiecesList();
+                var movablePieces = _gameControl.GetMovablePiecesList();
                 if (movablePieces.Count == 0)
                 {
                     Console.WriteLine("No legal moves available!");
@@ -181,40 +181,11 @@ namespace ChessGame
             }
         }
 
-        private List<MovablePieceInfo> GetMovablePiecesList()
-        {
-            var movablePieces = new List<MovablePieceInfo>();
-            
-            if (_gameControl.AllLegalMoves == null) 
-                return movablePieces;
-
-            foreach (var move in _gameControl.AllLegalMoves)
-            {
-                if (move.Value != null && move.Value.Count > 0)
-                {
-                    var piece = move.Key;
-                    var position = piece.GetCurrentCoordinate();
-                    var algebraicPosition = _gameControl.CoordinateToAlgebraic(position);
-                    
-                    movablePieces.Add(new MovablePieceInfo
-                    {
-                        Piece = piece,
-                        Position = algebraicPosition,
-                        MoveCount = move.Value.Count
-                    });
-                }
-            }
-
-            return movablePieces.OrderBy(p => p.Piece.GetPieceType())
-                               .ThenBy(p => p.Position)
-                               .ToList();
-        }
-
         private void GetMovablePiecesChoice(List<MovablePieceInfo> movablePieces)
         {
             Console.WriteLine("\nPieces that can move:");
             Console.WriteLine("---------------------");
-            
+
             for (int i = 0; i < movablePieces.Count; i++)
             {
                 var pieceInfo = movablePieces[i];
@@ -286,6 +257,7 @@ namespace ChessGame
             if (!string.IsNullOrEmpty(_lastGameMessage))
             {
                 Console.WriteLine($"{_lastGameMessage}");
+                _lastGameMessage = "";
             }
 
         }
@@ -384,7 +356,7 @@ namespace ChessGame
 
         private void GameControl_OnMoveDone()
         {
-            _lastGameMessage = "Move successful!";
+            _lastGameMessage += "\nMove successful!";
         }
 
         private void GameControl_OnCapturePiece(IPiece capturedPiece)
@@ -443,13 +415,12 @@ namespace ChessGame
         {
             var game = new Program();
             game.Run();
+            // var simulator = new ChessGameSimulator();
+            // simulator.RunAllTests();
+            
+            // Console.WriteLine("\nPress any key to exit...");
+            // Console.ReadKey();
         }
     }
 
-    public class MovablePieceInfo
-    {
-        public IPiece Piece { get; set; } = null!;
-        public string Position { get; set; } = string.Empty;
-        public int MoveCount { get; set; }
-    }
 }

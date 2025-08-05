@@ -246,12 +246,12 @@ public class GameControl
         IPiece pieceToMove = this._intendedSquareSource!.GetPiece()!;
         ISquare sourceSquare = this._intendedSquareSource;
 
-        UpdateMoveHistory(sourceSquare, destinationSquare, pieceToMove);
         UpdateFiftyMoveRule(pieceToMove.GetPieceType(), destinationSquare.GetPiece() != null);
 
         HandleSpecialMoves(pieceToMove, sourceSquare, destinationSquare);
 
         MovePiece(sourceSquare, destinationSquare, pieceToMove);
+        UpdateMoveHistory(sourceSquare, destinationSquare, pieceToMove);
 
         OnMoveDone?.Invoke();
         NextTurn();
@@ -317,7 +317,7 @@ public class GameControl
                LastMoveDestination.GetPosition().X == destinationSquare.GetPosition().X &&
                LastMoveDestination.GetPosition().Y == sourceSquare.GetPosition().Y;
     }
-
+    
     private void HandleEnPassant()
     {
         if (LastMovedPiece != null && LastMoveDestination != null)
@@ -911,6 +911,35 @@ public class GameControl
         return null;
     }
 
+    public List<MovablePieceInfo> GetMovablePiecesList()
+        {
+            var movablePieces = new List<MovablePieceInfo>();
+            
+            if (this.AllLegalMoves == null) 
+                return movablePieces;
+
+            foreach (var move in this.AllLegalMoves)
+            {
+                if (move.Value != null && move.Value.Count > 0)
+                {
+                    var piece = move.Key;
+                    var position = piece.GetCurrentCoordinate();
+                    var algebraicPosition = CoordinateToAlgebraic(position);
+                    
+                    movablePieces.Add(new MovablePieceInfo
+                    {
+                        Piece = piece,
+                        Position = algebraicPosition,
+                        MoveCount = move.Value.Count
+                    });
+                }
+            }
+
+            return movablePieces.OrderBy(p => p.Piece.GetPieceType())
+                               .ThenBy(p => p.Position)
+                               .ToList();
+        }
+
     public void HandleCheck() 
     {
         this.State = GameState.Check;
@@ -941,4 +970,24 @@ public class GameControl
         this.State = GameState.FiftyMoveDraw;
         OnDraw?.Invoke();
     }
+
+    // #if DEBUG || TESTING
+    // public void SetLastMove(ISquare? source, ISquare? destination, IPiece? piece)
+    // {
+    //     LastMoveSource = source;
+    //     LastMoveDestination = destination;
+    //     LastMovedPiece = piece;
+    // }
+
+    // public void AddPieceToPlayer(IPiece piece, ColorType playerColor)
+    // {
+    //     var player = Players.First(p => p.GetColor() == playerColor);
+    //     PlayerPieces[player].Add(piece);
+    // }
+
+    // public void SetCurrentPlayer(ColorType color)
+    // {
+    //     _currentPlayerIndex = Players.FindIndex(p => p.GetColor() == color);
+    // }
+    // #endif
 }
