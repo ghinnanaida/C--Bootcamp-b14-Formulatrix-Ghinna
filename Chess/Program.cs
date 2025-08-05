@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic; 
+using System.Linq;
 using ChessGame.Controllers;
 using ChessGame.Enumerations;
 using ChessGame.Interfaces;
@@ -42,12 +43,22 @@ namespace ChessGame
                    _gameControl.State != GameState.FiftyMoveDraw && 
                    _gameControl.State != GameState.Resignation)
             {
-                Console.WriteLine("\nEnter the square of the piece you want to move (e.g., e2), 'resign' to concede, or 'exit' to quit: ");
+                // Display movable pieces list
+                var movablePieces = GetMovablePiecesList();
+                if (movablePieces.Count == 0)
+                {
+                    Console.WriteLine("No legal moves available!");
+                    break;
+                }
+
+                GetMovablePiecesChoice(movablePieces);
+                
+                Console.WriteLine("\nSelect a piece to move by entering its number, 'resign' to concede, or 'exit' to quit: ");
                 string? input = Console.ReadLine()?.ToLower();
 
                 if (string.IsNullOrWhiteSpace(input))
                 {
-                    Console.WriteLine("Invalid input. Please enter a square coordinate.");
+                    Console.WriteLine("Invalid input. Please enter a piece number.");
                     continue;
                 }
 
@@ -63,14 +74,14 @@ namespace ChessGame
                     break;
                 }
 
-                Point? sourceCoord = _gameControl.ParseAlgebraicNotation(input);
-                if (sourceCoord == null)
+                if (!int.TryParse(input, out int pieceNumber) || pieceNumber < 1 || pieceNumber > movablePieces.Count)
                 {
-                    Console.WriteLine("Invalid coordinate format. Use 'a1' to 'h8'.");
+                    Console.WriteLine($"Invalid selection. Please enter a number between 1 and {movablePieces.Count}.");
                     continue;
                 }
 
-                ISquare sourceSquare = _gameControl.Board.GetSquare(sourceCoord.Value);
+                var selectedPieceInfo = movablePieces[pieceNumber - 1];
+                ISquare sourceSquare = _gameControl.Board.GetSquare(selectedPieceInfo.Piece.GetCurrentCoordinate());
 
                 try
                 {
@@ -167,6 +178,52 @@ namespace ChessGame
                 default:
                     Console.WriteLine("Game ended unexpectedly.");
                     break;
+            }
+        }
+
+        private List<MovablePieceInfo> GetMovablePiecesList()
+        {
+            var movablePieces = new List<MovablePieceInfo>();
+            
+            if (_gameControl.AllLegalMoves == null) 
+                return movablePieces;
+
+            foreach (var move in _gameControl.AllLegalMoves)
+            {
+                if (move.Value != null && move.Value.Count > 0)
+                {
+                    var piece = move.Key;
+                    var position = piece.GetCurrentCoordinate();
+                    var algebraicPosition = _gameControl.CoordinateToAlgebraic(position);
+                    
+                    movablePieces.Add(new MovablePieceInfo
+                    {
+                        Piece = piece,
+                        Position = algebraicPosition,
+                        MoveCount = move.Value.Count
+                    });
+                }
+            }
+
+            return movablePieces.OrderBy(p => p.Piece.GetPieceType())
+                               .ThenBy(p => p.Position)
+                               .ToList();
+        }
+
+        private void GetMovablePiecesChoice(List<MovablePieceInfo> movablePieces)
+        {
+            Console.WriteLine("\nPieces that can move:");
+            Console.WriteLine("---------------------");
+            
+            for (int i = 0; i < movablePieces.Count; i++)
+            {
+                var pieceInfo = movablePieces[i];
+                var piece = pieceInfo.Piece;
+                string pieceType = piece.GetPieceType().ToString();
+                string position = pieceInfo.Position;
+                int moveCount = pieceInfo.MoveCount;
+                
+                Console.WriteLine($"{i + 1}. {pieceType} {position} ({moveCount} legal move{(moveCount == 1 ? "" : "s")})");
             }
         }
 
@@ -387,5 +444,12 @@ namespace ChessGame
             var game = new Program();
             game.Run();
         }
+    }
+
+    public class MovablePieceInfo
+    {
+        public IPiece Piece { get; set; } = null!;
+        public string Position { get; set; } = string.Empty;
+        public int MoveCount { get; set; }
     }
 }
