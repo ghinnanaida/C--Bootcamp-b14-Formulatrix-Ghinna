@@ -6,7 +6,7 @@ using ChessGame.Enumerations;
 using ChessGame.Interfaces;
 using ChessGame.RecordStructs;
 using ChessGame.Models; 
-using ChessGame.Testing;
+// using ChessGame.Testing;
 
 namespace ChessGame
 {
@@ -349,7 +349,6 @@ namespace ChessGame
                     break;
                 case PieceType.Pawn:
                     pieceChar = (piece.GetColor() == ColorType.White) ? "\u2659" : "\u265F"; 
-                    // pieceChar = "\u2659"; 
                     break;
             }
             return pieceChar;
