@@ -6,7 +6,6 @@ using ChessGame.Enumerations;
 using ChessGame.Interfaces;
 using ChessGame.RecordStructs;
 using ChessGame.Models; 
-// using ChessGame.Testing;
 
 namespace ChessGame
 {
@@ -415,11 +414,6 @@ namespace ChessGame
         {
             var game = new Program();
             game.Run();
-            // var simulator = new ChessGameSimulator();
-            // simulator.RunAllTests();
-            
-            // Console.WriteLine("\nPress any key to exit...");
-            // Console.ReadKey();
         }
     }
 

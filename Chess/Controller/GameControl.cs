@@ -171,14 +171,12 @@ public class GameControl
     {
         if (!CanIntendMove())
         {
-            Console.WriteLine("Cannot intend move in current game state.");
             return;
         }
 
         var piece = sourceSquare.GetPiece();
         if (!IsValidPieceSelection(piece))
         {
-            Console.WriteLine("No piece or not your piece in selected square!");
             ResetMoveIntention();
             return;
         }
@@ -263,13 +261,11 @@ public class GameControl
     {
         if (State != GameState.MakingMove || _intendedSquareSource == null)
         {
-            Console.WriteLine("Invalid game state for making a move.");
             return false;
         }
 
         if (CurrentLegalMoves == null || !CurrentLegalMoves.Contains(destinationSquare))
         {
-            Console.WriteLine("Invalid move. The selected destination is not a legal move for the chosen piece.");
             ResetMoveIntention();
             return false;
         }
@@ -277,7 +273,6 @@ public class GameControl
         var pieceToMove = this._intendedSquareSource.GetPiece();
         if (pieceToMove == null)
         {
-            Console.WriteLine("Error: No piece at the intended source square.");
             return false;
         }
 
@@ -971,23 +966,4 @@ public class GameControl
         OnDraw?.Invoke();
     }
 
-    // #if DEBUG || TESTING
-    // public void SetLastMove(ISquare? source, ISquare? destination, IPiece? piece)
-    // {
-    //     LastMoveSource = source;
-    //     LastMoveDestination = destination;
-    //     LastMovedPiece = piece;
-    // }
-
-    // public void AddPieceToPlayer(IPiece piece, ColorType playerColor)
-    // {
-    //     var player = Players.First(p => p.GetColor() == playerColor);
-    //     PlayerPieces[player].Add(piece);
-    // }
-
-    // public void SetCurrentPlayer(ColorType color)
-    // {
-    //     _currentPlayerIndex = Players.FindIndex(p => p.GetColor() == color);
-    // }
-    // #endif
 }
