@@ -8,6 +8,7 @@ public interface IPiece
     ColorType GetColor();
     PieceState GetState();
     PieceType GetPieceType();
+    Point GetInitialCoordinate();
     Point GetCurrentCoordinate();
     bool GetHasMoved();
     void SetState(PieceState newState);
