@@ -2,37 +2,31 @@ using ChessGame.Enumerations;
 using ChessGame.Interfaces;
 using ChessGame.RecordStructs;
 using ChessGame.Models;
+using System.Linq;
 
 namespace ChessGame.Controllers;
-
-// todo:
-// remove all writeline in gamecontrol
-// semua return dibuat variable
-// display dibuat class sendiri
-// trus baru diinstantiate di main semua
-// Display coba pakai ANSI -> check punya checkers
 
 public class GameControl
 {
     private const int BOARD_SIZE = 8;
-    private const int FIFTY_MOVE_RULE_LIMIT = 100; 
+    private const int FIFTY_MOVE_RULE_LIMIT = 100;
     private int _fiftyMoveCounter;
-    
+
     private static readonly Point[] RookDirections = {
         new Point { X = 0, Y = 1 }, new Point { X = 0, Y = -1 },
         new Point { X = 1, Y = 0 }, new Point { X = -1, Y = 0 }
     };
-    
-    private static readonly Point[] BishopDirections = { 
-        new Point { X = 1, Y = 1 }, new Point { X = 1, Y = -1 }, 
-        new Point { X = -1, Y = 1 }, new Point { X = -1, Y = -1 } 
+
+    private static readonly Point[] BishopDirections = {
+        new Point { X = 1, Y = 1 }, new Point { X = 1, Y = -1 },
+        new Point { X = -1, Y = 1 }, new Point { X = -1, Y = -1 }
     };
-    
+
     private static readonly Point[] KingDirections = {
         new Point{ X = 0, Y = 1}, new Point{X = 0, Y = -1}, new Point{ X = 1, Y = 0 }, new Point{ X = -1, Y = 0},
         new Point{ X = 1, Y = 1}, new Point{X = 1, Y = -1}, new Point{ X = -1, Y = 1 }, new Point{ X = -1, Y = -1}
     };
-    
+
     private static readonly Point[] KnightMoves = {
         new Point{ X = 2, Y = 1}, new Point{ X = 2, Y = -1}, new Point{ X = -2, Y = 1}, new Point{ X = -2, Y = -1},
         new Point{ X = 1, Y = 2}, new Point{ X = 1, Y = -2}, new Point{ X = -1, Y = 2}, new Point{ X = -1, Y = -2}
@@ -45,6 +39,7 @@ public class GameControl
 
     private int _currentPlayerIndex;
     private ISquare? _intendedSquareSource;
+    private Func<ColorType, PieceType> _promotionChoiceProvider;
 
     public Dictionary<IPiece, List<ISquare>>? AllLegalMoves { get; private set; }
     public List<ISquare>? CurrentLegalMoves { get; private set; }
@@ -62,20 +57,14 @@ public class GameControl
     public event Action? OnStalemate;
     public event Action? OnDraw;
     public event Action? OnCheck;
-
-    public GameControl()
+    
+    public GameControl(List<IPlayer> players, Dictionary<IPlayer, List<IPiece>> playerPieces,
+                      IBoard board, Func<ColorType, PieceType> promotionChoiceProvider)
     {
-        this.Players = new List<IPlayer>
-        {
-            new Player(ColorType.White),
-            new Player(ColorType.Black)
-        };
-        this.PlayerPieces = new Dictionary<IPlayer, List<IPiece>>()
-        {
-            {Players[0], new List<IPiece>()},
-            {Players[1], new List<IPiece>()}
-        };
-        this.Board = new Board();
+        this.Players = players;
+        this.PlayerPieces = playerPieces;
+        this.Board = board;
+        this._promotionChoiceProvider = promotionChoiceProvider;
         this.State = GameState.Init;
         this._currentPlayerIndex = 0;
         this._fiftyMoveCounter = 0;
@@ -89,34 +78,45 @@ public class GameControl
 
     public bool IsValidCoordinate(Point coordinate)
     {
-        return coordinate.X >= 0 && coordinate.X < BOARD_SIZE && coordinate.Y >= 0 && coordinate.Y < BOARD_SIZE;
+        bool isValid = coordinate.X >= 0 && coordinate.X < BOARD_SIZE && coordinate.Y >= 0 && coordinate.Y < BOARD_SIZE;
+        return isValid;
     }
 
     public Point? ParseAlgebraicNotation(string algebraicCoord)
     {
+        Point? coordinate = null;
+
         if (string.IsNullOrWhiteSpace(algebraicCoord) || algebraicCoord.Length != 2)
-            return null;
+        {
+            return coordinate;
+        }
 
         char fileChar = algebraicCoord[0];
         char rankChar = algebraicCoord[1];
 
         if (fileChar < 'a' || fileChar > 'h' || !char.IsDigit(rankChar))
-            return null;
+        {
+            return coordinate;
+        }
 
         int x = fileChar - 'a';
         int y = rankChar - '1';
 
         if (IsValidCoordinate(new Point { X = x, Y = y }))
-            return new Point { X = x, Y = y };
+        {
+            coordinate = new Point { X = x, Y = y };
+            return coordinate;
+        }
 
-        return null;
+        return coordinate;
     }
 
     public string CoordinateToAlgebraic(Point coordinate)
     {
         char file = (char)('a' + coordinate.X);
         int rank = coordinate.Y + 1;
-        return $"{file}{rank}";
+        string algebraicCoordinate = $"{file}{rank}";
+        return algebraicCoordinate;
     }
 
     public void InitGame()
@@ -161,7 +161,8 @@ public class GameControl
 
     public IPlayer GetCurrentPlayer()
     {
-        return Players[_currentPlayerIndex];
+        IPlayer currentPlayer = Players[_currentPlayerIndex];
+        return currentPlayer;
     }
 
     public void IntendMove(ISquare sourceSquare)
@@ -185,12 +186,14 @@ public class GameControl
 
     private bool CanIntendMove()
     {
-        return State == GameState.IntendingMove || State == GameState.Check;
+        bool canIntend = State == GameState.IntendingMove || State == GameState.Check;
+        return canIntend;
     }
 
     private bool IsValidPieceSelection(IPiece? piece)
     {
-        return piece != null && piece.GetColor() == Players[_currentPlayerIndex].GetColor();
+        bool isValid = piece != null && piece.GetColor() == Players[_currentPlayerIndex].GetColor();
+        return isValid;
     }
 
     private void ResetMoveIntention()
@@ -206,74 +209,57 @@ public class GameControl
         this.State = GameState.IntendingMove;
     }
 
-    public PieceType GetPromotionChoice(ColorType color)
-    {
-        Console.WriteLine($"{color} pawn reached the end! Choose promotion:");
-        Console.WriteLine("1. Queen");
-        Console.WriteLine("2. Rook");
-        Console.WriteLine("3. Bishop");
-        Console.WriteLine("4. Knight");
-        Console.Write("Enter your choice (1-4): ");
-
-        while (true)
-        {
-            string? input = Console.ReadLine();
-            switch (input)
-            {
-                case "1": return PieceType.Queen;
-                case "2": return PieceType.Rook;
-                case "3": return PieceType.Bishop;
-                case "4": return PieceType.Knight;
-                default:
-                    Console.Write("Invalid choice. Please enter 1-4: ");
-                    break;
-            }
-        }
-    }
-
     public bool MakeMove(ISquare destinationSquare)
     {
+        bool moveSuccessful;
+
         if (!ValidateMoveAttempt(destinationSquare))
         {
-            return false;
+            moveSuccessful = false;
+            return moveSuccessful;
         }
 
         IPiece pieceToMove = this._intendedSquareSource!.GetPiece()!;
         ISquare sourceSquare = this._intendedSquareSource;
 
         UpdateFiftyMoveRule(pieceToMove.GetPieceType(), destinationSquare.GetPiece() != null);
-
         HandleSpecialMoves(pieceToMove, sourceSquare, destinationSquare);
-
         MovePiece(sourceSquare, destinationSquare, pieceToMove);
         UpdateMoveHistory(sourceSquare, destinationSquare, pieceToMove);
 
         OnMoveDone?.Invoke();
         NextTurn();
 
-        return true;
+        moveSuccessful = true;
+        return moveSuccessful;
     }
 
     private bool ValidateMoveAttempt(ISquare destinationSquare)
     {
+        bool isValid;
+
         if (State != GameState.MakingMove || _intendedSquareSource == null)
         {
-            return false;
+            isValid = false;
+            return isValid;
         }
 
         if (CurrentLegalMoves == null || !CurrentLegalMoves.Contains(destinationSquare))
         {
             ResetMoveIntention();
-            return false;
+            isValid = false;
+            return isValid;
         }
 
         var pieceToMove = this._intendedSquareSource.GetPiece();
         if (pieceToMove == null)
         {
-            return false;
+            isValid = false;
+            return isValid;
         }
 
-        return true;
+        isValid = true;
+        return isValid;
     }
 
     private void HandleSpecialMoves(IPiece pieceToMove, ISquare sourceSquare, ISquare destinationSquare)
@@ -300,7 +286,7 @@ public class GameControl
 
     private bool IsEnPassantMove(IPiece pieceToMove, ISquare sourceSquare, ISquare destinationSquare)
     {
-        return pieceToMove.GetPieceType() == PieceType.Pawn &&
+        bool isEnPassant = pieceToMove.GetPieceType() == PieceType.Pawn &&
                destinationSquare.GetPiece() == null &&
                Math.Abs(sourceSquare.GetPosition().X - destinationSquare.GetPosition().X) == 1 &&
                LastMovedPiece != null &&
@@ -308,8 +294,9 @@ public class GameControl
                LastMoveDestination != null &&
                LastMoveDestination.GetPosition().X == destinationSquare.GetPosition().X &&
                LastMoveDestination.GetPosition().Y == sourceSquare.GetPosition().Y;
+        return isEnPassant;
     }
-    
+
     private void HandleEnPassant()
     {
         if (LastMovedPiece != null && LastMoveDestination != null)
@@ -333,8 +320,9 @@ public class GameControl
 
     private bool IsCastlingMove(IPiece pieceToMove, ISquare sourceSquare, ISquare destinationSquare)
     {
-        return pieceToMove.GetPieceType() == PieceType.King &&
+        bool isCastling = pieceToMove.GetPieceType() == PieceType.King &&
                Math.Abs(sourceSquare.GetPosition().X - destinationSquare.GetPosition().X) == 2;
+        return isCastling;
     }
 
     private void HandleCastling(ISquare sourceSquare, ISquare destinationSquare)
@@ -360,13 +348,14 @@ public class GameControl
     private bool IsPawnPromotion(IPiece pieceToMove, ISquare destinationSquare)
     {
         int promotionRank = pieceToMove.GetColor() == ColorType.White ? 7 : 0;
-        return pieceToMove.GetPieceType() == PieceType.Pawn &&
+        bool isPromotion = pieceToMove.GetPieceType() == PieceType.Pawn &&
                destinationSquare.GetPosition().Y == promotionRank;
+        return isPromotion;
     }
 
     public IPiece HandlePawnPromotion(IPiece pieceToMove, ISquare destinationSquare)
     {
-        var promotionType = GetPromotionChoice(pieceToMove.GetColor());
+        var promotionType = _promotionChoiceProvider(pieceToMove.GetColor());
         pieceToMove.SetPieceType(promotionType);
         OnPawnPromotion?.Invoke(pieceToMove);
         return pieceToMove;
@@ -403,14 +392,12 @@ public class GameControl
     {
         this._currentPlayerIndex = (_currentPlayerIndex + 1) % Players.Count;
         ResetTurnState();
-        
+
         var currentPlayer = GetCurrentPlayer();
-        var currentPlayerColor = currentPlayer.GetColor();
-        
-        bool isInCheck = IsKingInCheck(currentPlayerColor);
+        bool isInCheck = IsKingInCheck(currentPlayer.GetColor());
         this.AllLegalMoves = GetAllPiecesLegalMoves(currentPlayer);
         int totalMoveCount = this.AllLegalMoves.Values.Sum(moves => moves.Count);
-        
+
         UpdateGameState(isInCheck, totalMoveCount, currentPlayer);
     }
 
@@ -427,7 +414,6 @@ public class GameControl
         {
             if (legalMovesCount == 0)
             {
-                var currentPlayerColor = currentPlayer.GetColor();
                 HandleCheckmate();
             }
             else
@@ -451,14 +437,19 @@ public class GameControl
     public List<ISquare> GetPossibleLegalMoves(ISquare sourceSquare)
     {
         var piece = sourceSquare.GetPiece();
+        List<ISquare> possibleMoves;
+
         if (piece == null || piece.GetState() != PieceState.Active)
-            return new List<ISquare>();
+        {
+            possibleMoves = new List<ISquare>();
+            return possibleMoves;
+        }
 
         var position = sourceSquare.GetPosition();
         var pieceType = piece.GetPieceType();
         var pieceColor = piece.GetColor();
 
-        return pieceType switch
+        possibleMoves = pieceType switch
         {
             PieceType.Pawn => GetPawnMoves(position, pieceColor),
             PieceType.Rook => GetSlidingMoves(position, pieceColor, RookDirections),
@@ -468,6 +459,7 @@ public class GameControl
             PieceType.King => GetKingMoves(position, pieceColor),
             _ => new List<ISquare>()
         };
+        return possibleMoves;
     }
 
     private List<ISquare> GetSlidingMoves(Point position, ColorType pieceColor, Point[] directions)
@@ -524,8 +516,7 @@ public class GameControl
                 var square = this.Board.GetSquare(newPos);
                 var targetPiece = square.GetPiece();
 
-                if (targetPiece == null ||
-                    (targetPiece.GetState() == PieceState.Active && targetPiece.GetColor() != pieceColor))
+                if (targetPiece == null || targetPiece.GetColor() != pieceColor)
                 {
                     legalMoves.Add(square);
                 }
@@ -542,9 +533,7 @@ public class GameControl
         int enPassantRank = pieceColor == ColorType.White ? 4 : 3;
 
         AddPawnForwardMoves(legalMoves, position, direction, startY);
-        
         AddPawnCaptureMoves(legalMoves, position, direction, pieceColor);
-        
         AddEnPassantMoves(legalMoves, position, direction, pieceColor, enPassantRank);
 
         return legalMoves;
@@ -635,8 +624,7 @@ public class GameControl
                 var square = this.Board.GetSquare(newPos);
                 var targetPiece = square.GetPiece();
 
-                if (targetPiece == null ||
-                    (targetPiece.GetState() == PieceState.Active && targetPiece.GetColor() != pieceColor))
+                if (targetPiece == null || (targetPiece.GetState() == PieceState.Active && targetPiece.GetColor() != pieceColor))
                 {
                     legalMoves.Add(square);
                 }
@@ -667,57 +655,80 @@ public class GameControl
 
     private bool CanCastleKingSide(Point kingPosition, ColorType pieceColor)
     {
+        bool canCastle;
         var kingsideRook = Board.GetSquare(new Point { X = 7, Y = kingPosition.Y }).GetPiece();
-        if (kingsideRook == null || kingsideRook.GetPieceType() != PieceType.Rook || 
+        if (kingsideRook == null || kingsideRook.GetPieceType() != PieceType.Rook ||
             kingsideRook.GetHasMoved() || kingsideRook.GetColor() != pieceColor)
-            return false;
+        {
+            canCastle = false;
+            return canCastle;
+        }
 
         for (int x = kingPosition.X + 1; x < 7; x++)
         {
             if (Board.GetSquare(new Point { X = x, Y = kingPosition.Y }).GetPiece() != null)
-                return false;
+            {
+                canCastle = false; 
+                return canCastle;
+            }
         }
 
         var opposingColor = pieceColor == ColorType.White ? ColorType.Black : ColorType.White;
-        for (int x = kingPosition.X + 1; x <= kingPosition.X + 2; x++)
+        for (int x = kingPosition.X; x <= kingPosition.X + 2; x++)
         {
             if (IsSquareAttacked(Board.GetSquare(new Point { X = x, Y = kingPosition.Y }), opposingColor))
-                return false;
+            {
+                canCastle = false;
+                return canCastle;
+            }
         }
-
-        return true;
+        canCastle = true;
+        return canCastle;
     }
 
     private bool CanCastleQueenSide(Point kingPosition, ColorType pieceColor)
     {
+        bool canCastle;
         var queensideRook = Board.GetSquare(new Point { X = 0, Y = kingPosition.Y }).GetPiece();
-        if (queensideRook == null || queensideRook.GetPieceType() != PieceType.Rook || 
+        if (queensideRook == null || queensideRook.GetPieceType() != PieceType.Rook ||
             queensideRook.GetHasMoved() || queensideRook.GetColor() != pieceColor)
-            return false;
+        {
+            canCastle = false;
+            return canCastle;
+        }
 
         for (int x = 1; x < kingPosition.X; x++)
         {
             if (Board.GetSquare(new Point { X = x, Y = kingPosition.Y }).GetPiece() != null)
-                return false;
+            {   
+                canCastle = false;
+                return canCastle;
+            }
         }
 
         var opposingColor = pieceColor == ColorType.White ? ColorType.Black : ColorType.White;
-        for (int x = kingPosition.X - 1; x >= kingPosition.X - 2; x--)
+        for (int x = kingPosition.X; x >= kingPosition.X - 2; x--)
         {
             if (IsSquareAttacked(Board.GetSquare(new Point { X = x, Y = kingPosition.Y }), opposingColor))
-                return false;
+            {
+                canCastle = false;
+                return canCastle;
+            }
         }
-
-        return true;
+        canCastle = true;
+        return canCastle;
     }
 
     public List<ISquare> GetLegalMoves(ISquare sourceSquare)
     {
-        var possibleLegalMoves = GetPossibleLegalMoves(sourceSquare);
         var legalMoves = new List<ISquare>();
+        var possibleLegalMoves = GetPossibleLegalMoves(sourceSquare);
         var pieceToMove = sourceSquare.GetPiece();
 
-        if (pieceToMove == null) return legalMoves;
+        if (pieceToMove == null)
+        {
+            return legalMoves;
+        }
 
         foreach (var destSquare in possibleLegalMoves)
         {
@@ -735,54 +746,59 @@ public class GameControl
         var originalPieceAtDest = destSquare.GetPiece();
         var originalCoord = pieceToMove.GetCurrentCoordinate();
         var originalHasMoved = pieceToMove.GetHasMoved();
-        
+
         sourceSquare.SetPiece(null);
         destSquare.SetPiece(pieceToMove);
         pieceToMove.SetCurrentCoordinate(destSquare.GetPosition());
-        pieceToMove.SetHasMoved(true);
-        
+        if (originalPieceAtDest != null)
+        {
+            originalPieceAtDest.SetState(PieceState.Captured);
+        }
+
         bool isLegal = !IsKingInCheck(pieceToMove.GetColor());
-        
+
         sourceSquare.SetPiece(pieceToMove);
         destSquare.SetPiece(originalPieceAtDest);
         pieceToMove.SetCurrentCoordinate(originalCoord);
         pieceToMove.SetHasMoved(originalHasMoved);
-        
+        if (originalPieceAtDest != null)
+        {
+            originalPieceAtDest.SetState(PieceState.Active);
+        }
+
         return isLegal;
     }
 
     public Dictionary<IPiece, List<ISquare>> GetAllPiecesLegalMoves(IPlayer currentPlayer)
     {
         var allLegalMoves = new Dictionary<IPiece, List<ISquare>>();
-        
         var activePieces = PlayerPieces[currentPlayer].Where(p => p.GetState() == PieceState.Active);
+
         foreach (var piece in activePieces)
         {
             var pieceSquare = Board.GetSquare(piece.GetCurrentCoordinate());
             allLegalMoves[piece] = GetLegalMoves(pieceSquare);
         }
-        
+
         return allLegalMoves;
     }
 
     public bool IsSquareAttacked(ISquare targetSquare, ColorType attackingColor)
     {
-        foreach (var playerEntry in PlayerPieces)
-        {
-            if (playerEntry.Key.GetColor() == attackingColor)
-            {
-                foreach (var attackingPiece in playerEntry.Value)
-                {
-                    if (attackingPiece.GetState() != PieceState.Active) continue;
+        bool isAttacked = false;
+        var attackingPlayer = Players.First(p => p.GetColor() == attackingColor);
 
-                    if (CanPieceAttackSquare(attackingPiece, targetSquare))
-                    {
-                        return true;
-                    }
-                }
+        foreach (var attackingPiece in PlayerPieces[attackingPlayer])
+        {
+            if (attackingPiece.GetState() != PieceState.Active) continue;
+
+            if (CanPieceAttackSquare(attackingPiece, targetSquare))
+            {
+                isAttacked = true;
+                return isAttacked;
             }
         }
-        return false;
+        return isAttacked;
     }
 
     private bool CanPieceAttackSquare(IPiece attackingPiece, ISquare targetSquare)
@@ -791,7 +807,7 @@ public class GameControl
         var pieceType = attackingPiece.GetPieceType();
         var targetPos = targetSquare.GetPosition();
 
-        return pieceType switch
+        bool canAttack = pieceType switch
         {
             PieceType.Pawn => CanPawnAttackSquare(piecePos, targetPos, attackingPiece.GetColor()),
             PieceType.King => CanKingAttackSquare(piecePos, targetPos),
@@ -801,6 +817,7 @@ public class GameControl
             PieceType.Queen => IsInLineOfSight(piecePos, targetPos, true, true),
             _ => false
         };
+        return canAttack;
     }
 
     private bool CanPawnAttackSquare(Point pawnPos, Point targetPos, ColorType pawnColor)
@@ -809,118 +826,125 @@ public class GameControl
         var attackLeft = new Point { X = pawnPos.X - 1, Y = pawnPos.Y + direction };
         var attackRight = new Point { X = pawnPos.X + 1, Y = pawnPos.Y + direction };
 
-        return (targetPos.Equals(attackLeft) && IsValidCoordinate(attackLeft)) ||
-               (targetPos.Equals(attackRight) && IsValidCoordinate(attackRight));
+        bool canAttack = (targetPos.Equals(attackLeft) && IsValidCoordinate(attackLeft)) ||
+                         (targetPos.Equals(attackRight) && IsValidCoordinate(attackRight));
+        return canAttack;
     }
 
     private bool CanKingAttackSquare(Point kingPos, Point targetPos)
     {
         int deltaX = Math.Abs(targetPos.X - kingPos.X);
         int deltaY = Math.Abs(targetPos.Y - kingPos.Y);
-        return deltaX <= 1 && deltaY <= 1 && (deltaX != 0 || deltaY != 0);
+        bool canAttack = deltaX <= 1 && deltaY <= 1 && (deltaX != 0 || deltaY != 0);
+        return canAttack;
     }
 
     private bool CanKnightAttackSquare(Point knightPos, Point targetPos)
     {
+        bool canAttack = false;
         foreach (var move in KnightMoves)
         {
             var attackPos = new Point { X = knightPos.X + move.X, Y = knightPos.Y + move.Y };
             if (IsValidCoordinate(attackPos) && targetPos.Equals(attackPos))
             {
-                return true;
+                canAttack = true;
+                return canAttack;
             }
         }
-        return false;
+        return canAttack;
     }
 
     private bool IsInLineOfSight(Point from, Point to, bool allowStraight, bool allowDiagonal)
     {
+        bool isInLine;
         int deltaX = to.X - from.X;
         int deltaY = to.Y - from.Y;
 
         bool isStraight = deltaX == 0 || deltaY == 0;
         bool isDiagonal = Math.Abs(deltaX) == Math.Abs(deltaY);
 
-        if (isStraight && !allowStraight) return false;
-        if (isDiagonal && !allowDiagonal) return false;
-        if (!isStraight && !isDiagonal) return false;
+        if ((isStraight && !allowStraight) || (isDiagonal && !allowDiagonal) || (!isStraight && !isDiagonal))
+        {
+            isInLine = false;
+            return isInLine;
+        }
 
-        int stepX = deltaX == 0 ? 0 : (deltaX > 0 ? 1 : -1);
-        int stepY = deltaY == 0 ? 0 : (deltaY > 0 ? 1 : -1);
+        int stepX = Math.Sign(deltaX);
+        int stepY = Math.Sign(deltaY);
 
         int currentX = from.X + stepX;
         int currentY = from.Y + stepY;
 
         while (currentX != to.X || currentY != to.Y)
         {
-            var currentPos = new Point { X = currentX, Y = currentY };
-            if (!IsValidCoordinate(currentPos)) return false;
-
-            if (Board.GetSquare(currentPos).GetPiece() != null)
-                return false;
-
+            if (Board.GetSquare(new Point { X = currentX, Y = currentY }).GetPiece() != null)
+            {
+                isInLine = false;
+                return isInLine;
+            }
             currentX += stepX;
             currentY += stepY;
         }
 
-        return true;
+        isInLine = true;
+        return isInLine;
     }
 
     public bool IsKingInCheck(ColorType kingColor)
     {
+        bool isInCheck;
         var kingSquare = FindKingSquare(kingColor);
-        if (kingSquare == null) return false;
+        if (kingSquare == null)
+        {
+            isInCheck = false;
+            return isInCheck;
+        }
 
         var opposingColor = kingColor == ColorType.White ? ColorType.Black : ColorType.White;
-        return IsSquareAttacked(kingSquare, opposingColor);
+        isInCheck = IsSquareAttacked(kingSquare, opposingColor);
+        return isInCheck;
     }
 
     private ISquare? FindKingSquare(ColorType kingColor)
     {
-        foreach (var playerEntry in PlayerPieces)
-        {
-            if (playerEntry.Key.GetColor() == kingColor)
-            {
-                foreach (var piece in playerEntry.Value)
-                {
-                    if (piece.GetPieceType() == PieceType.King && piece.GetState() == PieceState.Active)
-                    {
-                        return Board.GetSquare(piece.GetCurrentCoordinate());
-                    }
-                }
-            }
-        }
-        return null;
+        var player = Players.First(p => p.GetColor() == kingColor);
+        var king = PlayerPieces[player].FirstOrDefault(p => p.GetPieceType() == PieceType.King && p.GetState() == PieceState.Active);
+
+        ISquare? kingSquare = king != null ? Board.GetSquare(king.GetCurrentCoordinate()) : null;
+        return kingSquare;
     }
 
     public List<MovablePieceInfo> GetMovablePiecesList()
+    {
+        var movablePieces = new List<MovablePieceInfo>();
+
+        if (this.AllLegalMoves == null)
         {
-            var movablePieces = new List<MovablePieceInfo>();
-            
-            if (this.AllLegalMoves == null) 
-                return movablePieces;
-
-            foreach (var move in this.AllLegalMoves)
-            {
-                if (move.Value != null && move.Value.Count > 0)
-                {
-                    var piece = move.Key;
-                    var position = piece.GetCurrentCoordinate();
-                    var algebraicPosition = CoordinateToAlgebraic(position);
-                    
-                    movablePieces.Add(new MovablePieceInfo
-                    {
-                        Piece = piece,
-                        Position = algebraicPosition,
-                        MoveCount = move.Value.Count
-                    });
-                }
-            }
-
-            return movablePieces.OrderBy(p => p.Piece.GetPieceType())
-                               .ThenBy(p => p.Position)
-                               .ToList();
+            return movablePieces;
         }
+
+        foreach (var move in this.AllLegalMoves)
+        {
+            if (move.Value != null && move.Value.Count > 0)
+            {
+                var piece = move.Key;
+                var position = piece.GetCurrentCoordinate();
+                var algebraicPosition = CoordinateToAlgebraic(position);
+
+                movablePieces.Add(new MovablePieceInfo
+                {
+                    Piece = piece,
+                    Position = algebraicPosition,
+                    MoveCount = move.Value.Count
+                });
+            }
+        }
+
+        List<MovablePieceInfo> movablePiecesOrdered = movablePieces.OrderBy(p => p.Piece.GetPieceType())
+                           .ThenBy(p => p.Position)
+                           .ToList();
+        return movablePiecesOrdered;
+    }
 
     public void HandleCheck() 
     {
@@ -952,5 +976,4 @@ public class GameControl
         this.State = GameState.FiftyMoveDraw;
         OnDraw?.Invoke();
     }
-
 }

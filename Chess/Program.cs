@@ -5,30 +5,21 @@ using ChessGame.Controllers;
 using ChessGame.Enumerations;
 using ChessGame.Interfaces;
 using ChessGame.RecordStructs;
-using ChessGame.Models; 
+using ChessGame.Models;
+using ChessGame.Display;
+using ChessGame.Factories;
 
 namespace ChessGame
 {
     public class Program
     {
-        private GameControl _gameControl;
-        private string _lastGameMessage = "";
-        private const string WHITE_KING = "\u2654"; 
-        private const string BLACK_KING = "\u265a"; 
-        private const string WHITE_QUEEN = "\u2655"; 
-        private const string BLACK_QUEEN = "\u265b"; 
-        private const string WHITE_ROOK = "\u2656"; 
-        private const string BLACK_ROOK = "\u265c"; 
-        private const string WHITE_BISHOP = "\u2657"; 
-        private const string BLACK_BISHOP = "\u265d"; 
-        private const string WHITE_KNIGHT = "\u2658"; 
-        private const string BLACK_KNIGHT = "\u265e"; 
-        private const string WHITE_PAWN = "\u2659"; 
-        private const string BLACK_PAWN = "\u265f"; 
+        private readonly GameControl _gameControl;
+        private readonly ChessDisplay _display;
 
-        public Program()
+        public Program(GameControl gameControl, ChessDisplay display)
         {
-            _gameControl = new GameControl();
+            _gameControl = gameControl;
+            _display = display;
             
             _gameControl.OnMoveDone += GameControl_OnMoveDone;
             _gameControl.OnCapturePiece += GameControl_OnCapturePiece;
@@ -45,31 +36,27 @@ namespace ChessGame
         public void Run()
         {
             _gameControl.InitGame();
-            DisplayBoard(); 
-            Console.WriteLine("Game Started!");
-            Console.WriteLine($"{_gameControl.GetCurrentPlayer().GetColor()} to move.");
+            _display.DisplayBoard(); 
+            _display.DisplayGameMessage("🎮 Game Started!", MessageType.Success);
+            _display.DisplayCurrentPlayer(_gameControl.GetCurrentPlayer().GetColor());
 
-            while (_gameControl.State != GameState.CheckmateWhiteWin &&
-                   _gameControl.State != GameState.CheckmateBlackWin &&
-                   _gameControl.State != GameState.Stalemate &&
-                   _gameControl.State != GameState.FiftyMoveDraw && 
-                   _gameControl.State != GameState.Resignation)
+            while (!IsGameOver())
             {
                 var movablePieces = _gameControl.GetMovablePiecesList();
                 if (movablePieces.Count == 0)
                 {
-                    Console.WriteLine("No legal moves available!");
+                    _display.DisplayError("No legal moves available!");
                     break;
                 }
 
-                GetMovablePiecesChoice(movablePieces);
+                _display.DisplayMovablePieces(movablePieces);
                 
-                Console.WriteLine("\nSelect a piece to move by entering its number, 'resign' to concede, or 'exit' to quit: ");
+                _display.DisplayPrompt("\nSelect a piece to move by entering its number, 'resign' to concede, or 'exit' to quit: ");
                 string? input = Console.ReadLine()?.ToLower();
 
                 if (string.IsNullOrWhiteSpace(input))
                 {
-                    Console.WriteLine("Invalid input. Please enter a piece number.");
+                    _display.DisplayError("Invalid input. Please enter a piece number.");
                     continue;
                 }
 
@@ -81,13 +68,13 @@ namespace ChessGame
                 
                 if (input == "exit")
                 {
-                    Console.WriteLine("Exiting game.");
+                    _display.DisplayGameMessage("👋 Exiting game.", MessageType.Info);
                     break;
                 }
 
                 if (!int.TryParse(input, out int pieceNumber) || pieceNumber < 1 || pieceNumber > movablePieces.Count)
                 {
-                    Console.WriteLine($"Invalid selection. Please enter a number between 1 and {movablePieces.Count}.");
+                    _display.DisplayError($"Invalid selection. Please enter a number between 1 and {movablePieces.Count}.");
                     continue;
                 }
 
@@ -102,21 +89,21 @@ namespace ChessGame
                     {
                         if (_gameControl.CurrentLegalMoves.Count == 0)
                         {
-                            Console.WriteLine("This piece has no legal moves. Please select another piece.");
+                            _display.DisplayWarning("This piece has no legal moves. Please select another piece.");
                             _gameControl.CancelMove();
                             continue;
                         }
 
-                        DisplayBoardWithLegalMoves(_gameControl.CurrentLegalMoves);
+                        _display.DisplayBoardWithLegalMoves(_gameControl.CurrentLegalMoves);
                         
-                        Console.WriteLine($"Legal moves are highlighted in green.");
-                        Console.WriteLine($"Enter the destination square (e.g., e4) or 'cancel' to select a different piece:");
+                        _display.DisplayGameMessage("Legal moves are highlighted in green.", MessageType.Success);
+                        _display.DisplayPrompt("Enter the destination square (e.g., e4) or 'cancel' to select a different piece: ");
                         
                         string? destInput = Console.ReadLine()?.ToLower();
 
                         if (string.IsNullOrWhiteSpace(destInput))
                         {
-                            Console.WriteLine("Invalid input.");
+                            _display.DisplayError("Invalid input.");
                             _gameControl.CancelMove();
                             continue;
                         }
@@ -124,14 +111,14 @@ namespace ChessGame
                         if (destInput == "cancel")
                         {
                             _gameControl.CancelMove();
-                            DisplayBoard();
+                            _display.DisplayBoard();
                             continue;
                         }
 
                         Point? destCoord = _gameControl.ParseAlgebraicNotation(destInput);
                         if (destCoord == null)
                         {
-                            Console.WriteLine("Invalid coordinate format. Use 'a1' to 'h8'.");
+                            _display.DisplayError("Invalid coordinate format. Use 'a1' to 'h8'.");
                             _gameControl.CancelMove();
                             continue;
                         }
@@ -140,293 +127,109 @@ namespace ChessGame
                         
                         if (!_gameControl.CurrentLegalMoves.Contains(destSquare))
                         {
-                            Console.WriteLine("Invalid move. Please enter a valid destination from the highlighted squares.");
+                            _display.DisplayError("Invalid move. Please enter a valid destination from the highlighted squares.");
                             continue;
                         }
 
                         bool moveSuccessful = _gameControl.MakeMove(destSquare);
                         if (moveSuccessful)
                         {
-                            DisplayBoard(); 
-                            Console.WriteLine($"{_gameControl.GetCurrentPlayer().GetColor()} to move.");
+                            _display.DisplayBoard(); 
+                            _display.DisplayCurrentPlayer(_gameControl.GetCurrentPlayer().GetColor());
                         }
                         else
                         {
-                            Console.WriteLine("Move failed unexpectedly. Please try again.");
+                            _display.DisplayError("Move failed unexpectedly. Please try again.");
                             _gameControl.CancelMove();
                         }
                     }
                     else
                     {
-                        Console.WriteLine("No piece at the selected source square, or it's not your piece. Please select a valid piece to move.");
+                        _display.DisplayError("No piece at the selected source square, or it's not your piece. Please select a valid piece to move.");
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"An error occurred during move processing: {ex.Message}");
+                    _display.DisplayError($"An error occurred during move processing: {ex.Message}");
                     _gameControl.CancelMove();
                 }
             }
 
-            Console.WriteLine("\nGame Over!");
-            switch (_gameControl.State)
-            {
-                case GameState.CheckmateWhiteWin:
-                    Console.WriteLine("Checkmate! White wins!");
-                    break;
-                case GameState.CheckmateBlackWin:
-                    Console.WriteLine("Checkmate! Black wins!");
-                    break;
-                case GameState.Stalemate:
-                    Console.WriteLine("Stalemate! It's a draw.");
-                    break;
-                case GameState.FiftyMoveDraw:
-                    Console.WriteLine("Draw by 50-move rule!");
-                    break;
-                case GameState.Resignation:
-                    Console.WriteLine("Game ended by resignation.");
-                    break;
-                default:
-                    Console.WriteLine("Game ended unexpectedly.");
-                    break;
-            }
+            _display.DisplayGameMessage("\n🏁 Game Over!", MessageType.Info);
+            _display.DisplayGameState(_gameControl.State);
         }
 
-        private void GetMovablePiecesChoice(List<MovablePieceInfo> movablePieces)
+        private bool IsGameOver()
         {
-            Console.WriteLine("\nPieces that can move:");
-            Console.WriteLine("---------------------");
+            GameState[] gameOverStates = {
+                GameState.CheckmateWhiteWin,
+                GameState.CheckmateBlackWin,
+                GameState.Stalemate,
+                GameState.FiftyMoveDraw,
+                GameState.Resignation
+            };
 
-            for (int i = 0; i < movablePieces.Count; i++)
-            {
-                var pieceInfo = movablePieces[i];
-                var piece = pieceInfo.Piece;
-                string pieceType = piece.GetPieceType().ToString();
-                string position = pieceInfo.Position;
-                int moveCount = pieceInfo.MoveCount;
-                
-                Console.WriteLine($"{i + 1}. {pieceType} {position} ({moveCount} legal move{(moveCount == 1 ? "" : "s")})");
-            }
-        }
-
-        private void DisplayBoard()
-        {
-            Console.Clear();
-            Console.OutputEncoding = System.Text.Encoding.UTF8; 
-            
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine("\n    a  b  c  d  e  f  g  h ");
-            Console.WriteLine("   -------------------------");
-
-            for (int y = 7; y >= 0; y--)
-            {
-                Console.Write($"{y + 1} |");
-                for (int x = 0; x < 8; x++)
-                {
-                    ConsoleColor backgroundColor = (x + y) % 2 == 0 ? ConsoleColor.Blue : ConsoleColor.Gray;
-                    Console.BackgroundColor = backgroundColor;
-
-                    ISquare square = _gameControl.Board.GetSquare(new Point { X = x, Y = y });
-                    IPiece? piece = square.GetPiece();
-                    
-                    string cellContent;
-                    if (piece == null)
-                    {
-                        cellContent = "   ";
-                    }
-                    else
-                    {
-                        ConsoleColor foregroundColor = (piece.GetColor() == ColorType.White) ? ConsoleColor.White : ConsoleColor.Black;
-                        Console.ForegroundColor = foregroundColor;
-                        string pieceChar = GetPieceChar(piece);
-
-                        cellContent = $" {pieceChar} ";
-                    }
-                    
-                    Console.Write(cellContent);
-
-                    Console.ResetColor();
-                }
-                
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine($"| {y + 1}");
-            }
-            
-            Console.WriteLine("   -------------------------");
-            Console.WriteLine("    a  b  c  d  e  f  g  h \n");
-            Console.ResetColor();
-
-            if (_gameControl.LastMoveSource != null && _gameControl.LastMoveDestination != null)
-            {
-                string sourceNotation = _gameControl.CoordinateToAlgebraic(_gameControl.LastMoveSource.GetPosition());
-                string destNotation = _gameControl.CoordinateToAlgebraic(_gameControl.LastMoveDestination.GetPosition());
-                string pieceType = _gameControl.LastMovedPiece?.GetPieceType().ToString() ?? "Piece";
-                
-                Console.WriteLine($"Last move: {pieceType} {sourceNotation} → {destNotation}");
-            }
-            
-            if (!string.IsNullOrEmpty(_lastGameMessage))
-            {
-                Console.WriteLine($"{_lastGameMessage}");
-                _lastGameMessage = "";
-            }
-
-        }
-
-        private void DisplayBoardWithLegalMoves(List<ISquare> legalMoves)
-        {
-            Console.Clear();
-            Console.OutputEncoding = System.Text.Encoding.UTF8;
-
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine("\n    a  b  c  d  e  f  g  h ");
-            Console.WriteLine("   -------------------------");
-
-            for (int y = 7; y >= 0; y--)
-            {
-                Console.Write($"{y + 1} |");
-                for (int x = 0; x < 8; x++)
-                {
-                    ISquare square = _gameControl.Board.GetSquare(new Point { X = x, Y = y });
-                    bool isLegalMove = legalMoves.Contains(square);
-
-                    ConsoleColor backgroundColor;
-                    if (isLegalMove)
-                    {
-                        backgroundColor = ConsoleColor.Green; 
-                    }
-                    else
-                    {
-                        backgroundColor = (x + y) % 2 == 0 ? ConsoleColor.Blue : ConsoleColor.Gray;
-                    }
-                    Console.BackgroundColor = backgroundColor;
-
-                    IPiece? piece = square.GetPiece();
-
-                    string cellContent;
-                    if (piece == null)
-                    {
-                        if (isLegalMove)
-                        {
-                            cellContent = " • "; 
-                        }
-                        else
-                        {
-                            cellContent = "   ";
-                        }
-                    }
-                    else
-                    {
-                        ConsoleColor foregroundColor = (piece.GetColor() == ColorType.White) ? ConsoleColor.White : ConsoleColor.Black;
-                        Console.ForegroundColor = foregroundColor;
-                        string pieceChar = GetPieceChar(piece);
-
-                        cellContent = $" {pieceChar} ";
-                    }
-
-                    Console.Write(cellContent);
-
-                    Console.ResetColor();
-                }
-
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine($"| {y + 1}");
-            }
-
-            Console.WriteLine("   -------------------------");
-            Console.WriteLine("    a  b  c  d  e  f  g  h \n");
-            Console.ResetColor();
-        }
-        
-        private string GetPieceChar(IPiece piece)
-        {
-            string pieceChar = " ";
-            switch (piece.GetPieceType())
-            {
-                case PieceType.King:
-                    pieceChar = (piece.GetColor() == ColorType.White) ? WHITE_KING : BLACK_KING; 
-                    break;
-                case PieceType.Queen:
-                    pieceChar = (piece.GetColor() == ColorType.White) ? WHITE_QUEEN : BLACK_QUEEN;
-                    break;
-                case PieceType.Rook:
-                    pieceChar = (piece.GetColor() == ColorType.White) ? WHITE_ROOK : BLACK_ROOK; 
-                    break;
-                case PieceType.Bishop:
-                    pieceChar = (piece.GetColor() == ColorType.White) ? WHITE_BISHOP : BLACK_BISHOP; 
-                    break;
-                case PieceType.Knight:
-                    pieceChar = (piece.GetColor() == ColorType.White) ? WHITE_KNIGHT : BLACK_KNIGHT; 
-                    break;
-                case PieceType.Pawn:
-                    pieceChar = (piece.GetColor() == ColorType.White) ? WHITE_PAWN : BLACK_PAWN; 
-                    break;
-            }
-            return pieceChar;
+            bool result = gameOverStates.Contains(_gameControl.State);
+            return result;
         }
 
         private void GameControl_OnMoveDone()
         {
-            _lastGameMessage += "\nMove successful!";
+            _display.DisplaySuccess("Move successful!");
         }
 
         private void GameControl_OnCapturePiece(IPiece capturedPiece)
         {
-            _lastGameMessage = $"A {capturedPiece.GetColor()} {capturedPiece.GetPieceType()} was captured!";
+            _display.DisplayGameMessage($"🎯 A {capturedPiece.GetColor()} {capturedPiece.GetPieceType()} was captured!", MessageType.Success);
         }
 
         private void GameControl_OnCastling(IPiece king, IPiece rook)
         {
-            _lastGameMessage = $"{king.GetColor()} King and Rook castled!";
+            _display.DisplayGameMessage($"🏰 {king.GetColor()} King and Rook castled!", MessageType.Success);
         }
 
         private void GameControl_OnEnPassant(IPiece capturedPawn)
         {
-            _lastGameMessage = $"{capturedPawn.GetColor()} pawn captured via En Passant!";
+            _display.DisplayGameMessage($"⚡ {capturedPawn.GetColor()} pawn captured via En Passant!", MessageType.Success);
         }
         
         private void GameControl_OnPawnPromotion(IPiece promotedPiece)
         {
-            _lastGameMessage = $"{promotedPiece.GetColor()} pawn promoted to {promotedPiece.GetPieceType()}!";
+            _display.DisplayGameMessage($"👑 {promotedPiece.GetColor()} pawn promoted to {promotedPiece.GetPieceType()}!", MessageType.Success);
         }
 
         private void GameControl_OnCheck()
         {
-            _lastGameMessage = $"CHECK! {_gameControl.GetCurrentPlayer().GetColor()} king is under attack!";
+            _display.DisplayGameState(GameState.Check);
         }
 
         private void GameControl_OnCheckmate()
         {
-            _lastGameMessage = "Checkmate condition met!";
+            _display.DisplayGameMessage("🎯 Checkmate condition met!", MessageType.Info);
         }
 
         private void GameControl_OnStalemate()
         {
-            _lastGameMessage = "Stalemate condition met!";
+            _display.DisplayGameMessage("🤝 Stalemate condition met!", MessageType.Info);
         }
 
         private void GameControl_OnDraw()
         {
-            _lastGameMessage = "Draw by fifty move rule";
+            _display.DisplayGameMessage("🤝 Draw by fifty move rule", MessageType.Info);
         }
 
         private void GameControl_OnResign(ColorType resigningPlayerColor)
         {
-            if (resigningPlayerColor == ColorType.White)
-            {
-                _lastGameMessage = "White has resigned. Black wins!";
-            }
-            else 
-            {
-                _lastGameMessage = "Black has resigned. White wins!";
-            }
+            string message = resigningPlayerColor == ColorType.White 
+                ? "🏃 White has resigned. Black wins!"
+                : "🏃 Black has resigned. White wins!";
+            _display.DisplayGameMessage(message, MessageType.Info);
         }
 
         public static void Main(string[] args)
         {
-            var game = new Program();
-            game.Run();
+            var dependencies = GameFactory.CreateGameDependencies();
+            dependencies.Program.Run();
         }
     }
-
 }
