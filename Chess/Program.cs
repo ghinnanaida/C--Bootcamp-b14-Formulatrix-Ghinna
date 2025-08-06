@@ -13,6 +13,18 @@ namespace ChessGame
     {
         private GameControl _gameControl;
         private string _lastGameMessage = "";
+        private const string WHITE_KING = "\u2654"; 
+        private const string BLACK_KING = "\u265a"; 
+        private const string WHITE_QUEEN = "\u2655"; 
+        private const string BLACK_QUEEN = "\u265b"; 
+        private const string WHITE_ROOK = "\u2656"; 
+        private const string BLACK_ROOK = "\u265c"; 
+        private const string WHITE_BISHOP = "\u2657"; 
+        private const string BLACK_BISHOP = "\u265d"; 
+        private const string WHITE_KNIGHT = "\u2658"; 
+        private const string BLACK_KNIGHT = "\u265e"; 
+        private const string WHITE_PAWN = "\u2659"; 
+        private const string BLACK_PAWN = "\u265f"; 
 
         public Program()
         {
@@ -332,22 +344,22 @@ namespace ChessGame
             switch (piece.GetPieceType())
             {
                 case PieceType.King:
-                    pieceChar = (piece.GetColor() == ColorType.White) ? "\u2654" : "\u265a"; 
+                    pieceChar = (piece.GetColor() == ColorType.White) ? WHITE_KING : BLACK_KING; 
                     break;
                 case PieceType.Queen:
-                    pieceChar = (piece.GetColor() == ColorType.White) ? "\u2655" : "\u265b";
+                    pieceChar = (piece.GetColor() == ColorType.White) ? WHITE_QUEEN : BLACK_QUEEN;
                     break;
                 case PieceType.Rook:
-                    pieceChar = (piece.GetColor() == ColorType.White) ? "\u2656" : "\u265c"; 
+                    pieceChar = (piece.GetColor() == ColorType.White) ? WHITE_ROOK : BLACK_ROOK; 
                     break;
                 case PieceType.Bishop:
-                    pieceChar = (piece.GetColor() == ColorType.White) ? "\u2657" : "\u265d"; 
+                    pieceChar = (piece.GetColor() == ColorType.White) ? WHITE_BISHOP : BLACK_BISHOP; 
                     break;
                 case PieceType.Knight:
-                    pieceChar = (piece.GetColor() == ColorType.White) ? "\u2658" : "\u265e"; 
+                    pieceChar = (piece.GetColor() == ColorType.White) ? WHITE_KNIGHT : BLACK_KNIGHT; 
                     break;
                 case PieceType.Pawn:
-                    pieceChar = (piece.GetColor() == ColorType.White) ? "\u2659" : "\u265F"; 
+                    pieceChar = (piece.GetColor() == ColorType.White) ? WHITE_PAWN : BLACK_PAWN; 
                     break;
             }
             return pieceChar;

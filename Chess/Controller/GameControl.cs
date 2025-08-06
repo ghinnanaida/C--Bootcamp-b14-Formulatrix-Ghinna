@@ -5,6 +5,13 @@ using ChessGame.Models;
 
 namespace ChessGame.Controllers;
 
+// todo:
+// remove all writeline in gamecontrol
+// semua return dibuat variable
+// display dibuat class sendiri
+// trus baru diinstantiate di main semua
+// Display coba pakai ANSI -> check punya checkers
+
 public class GameControl
 {
     private const int BOARD_SIZE = 8;
@@ -65,15 +72,10 @@ public class GameControl
         };
         this.PlayerPieces = new Dictionary<IPlayer, List<IPiece>>()
         {
-            {Players[0], new List<IPiece>() },
+            {Players[0], new List<IPiece>()},
             {Players[1], new List<IPiece>()}
         };
         this.Board = new Board();
-        ResetGameState();
-    }
-
-    private void ResetGameState()
-    {
         this.State = GameState.Init;
         this._currentPlayerIndex = 0;
         this._fiftyMoveCounter = 0;
@@ -119,11 +121,6 @@ public class GameControl
 
     public void InitGame()
     {
-        foreach (var playerPieces in PlayerPieces.Values)
-        {
-            playerPieces.Clear();
-        }
-
         InitializePawns();
         InitializeBackRank(Players[0], 0);
         InitializeBackRank(Players[1], 7);
@@ -370,19 +367,9 @@ public class GameControl
     public IPiece HandlePawnPromotion(IPiece pieceToMove, ISquare destinationSquare)
     {
         var promotionType = GetPromotionChoice(pieceToMove.GetColor());
-        var promotedPiece = new Piece(
-            pieceToMove.GetColor(),
-            PieceState.Active,
-            promotionType,
-            destinationSquare.GetPosition()
-        );
-
-        var currentPlayerPieces = PlayerPieces.First(p => p.Key.GetColor() == pieceToMove.GetColor()).Value;
-        currentPlayerPieces.Remove(pieceToMove);
-        currentPlayerPieces.Add(promotedPiece);
-
-        OnPawnPromotion?.Invoke(promotedPiece);
-        return promotedPiece;
+        pieceToMove.SetPieceType(promotionType);
+        OnPawnPromotion?.Invoke(pieceToMove);
+        return pieceToMove;
     }
 
     private void MovePiece(ISquare sourceSquare, ISquare destinationSquare, IPiece pieceToMove)
@@ -461,7 +448,7 @@ public class GameControl
         }
     }
 
-    public List<ISquare> GetPseudoLegalMoves(ISquare sourceSquare)
+    public List<ISquare> GetPossibleLegalMoves(ISquare sourceSquare)
     {
         var piece = sourceSquare.GetPiece();
         if (piece == null || piece.GetState() != PieceState.Active)
@@ -726,13 +713,13 @@ public class GameControl
 
     public List<ISquare> GetLegalMoves(ISquare sourceSquare)
     {
-        var pseudoLegalMoves = GetPseudoLegalMoves(sourceSquare);
+        var possibleLegalMoves = GetPossibleLegalMoves(sourceSquare);
         var legalMoves = new List<ISquare>();
         var pieceToMove = sourceSquare.GetPiece();
 
         if (pieceToMove == null) return legalMoves;
 
-        foreach (var destSquare in pseudoLegalMoves)
+        foreach (var destSquare in possibleLegalMoves)
         {
             if (IsMoveLegal(sourceSquare, destSquare, pieceToMove))
             {
