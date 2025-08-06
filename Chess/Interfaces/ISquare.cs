@@ -7,5 +7,4 @@ public interface ISquare
     Point GetPosition();
     IPiece? GetPiece();
     void SetPiece(IPiece? newPiece);
-    void SetPosition(Point newCoordinate);
 }

@@ -14,10 +14,6 @@ public class Square : ISquare
     }
 
     public Point GetPosition() => this.Coordinate;
-    public void SetPosition(Point newCoordinate)
-    {
-        this.Coordinate = newCoordinate;
-    }
 
     public IPiece? GetPiece() => this.Piece;
     public void SetPiece(IPiece? newPiece)

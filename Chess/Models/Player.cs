@@ -13,8 +13,4 @@ public class Player : IPlayer
     }
 
     public ColorType GetColor() => this.Color;
-    public void SetColor(ColorType newColor)
-    {
-        this.Color = newColor;
-    }
 }
