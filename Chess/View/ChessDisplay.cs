@@ -272,7 +272,7 @@ namespace ChessGame.Display
 
             if (isLegalMove)
             {
-                Console.BackgroundColor = ConsoleColor.Green;
+                Console.BackgroundColor = ConsoleColor.Red;
             }
             else
             {

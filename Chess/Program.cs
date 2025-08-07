@@ -14,11 +14,6 @@ namespace ChessGame
     {
         public static void Main(string[] args)
         {
-            List<IPlayer> players = new List<IPlayer>
-            {
-                new Player(ColorType.White),
-                new Player(ColorType.Black)
-            };
 
             var whitePieces = new List<IPiece>();
             var blackPieces = new List<IPiece>();
@@ -36,13 +31,13 @@ namespace ChessGame
 
             Dictionary<IPlayer, List<IPiece>> playerPieces = new Dictionary<IPlayer, List<IPiece>>
             {
-                {players[0], whitePieces},
-                {players[1], blackPieces}
+                {new Player(ColorType.White), whitePieces},
+                {new Player(ColorType.Black), blackPieces}
             };
 
             IBoard board = new Board();
 
-            GameControl gameControl = new GameControl(players, playerPieces, board);
+            GameControl gameControl = new GameControl(playerPieces, board);
             
             ChessDisplay display = new ChessDisplay(gameControl);
 

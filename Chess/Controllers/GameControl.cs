@@ -32,12 +32,12 @@ public class GameControl
         new Point{ X = 1, Y = 2}, new Point{ X = 1, Y = -2}, new Point{ X = -1, Y = 2}, new Point{ X = -1, Y = -2}
     };
 
-    public List<IPlayer> Players { get; private set; }
     public Dictionary<IPlayer, List<IPiece>> PlayerPieces { get; private set; }
     public IBoard Board { get; private set; }
     public GameState State { get; private set; }
 
     private int _currentPlayerIndex;
+    private IPlayer _currentPlayer;
     private ISquare? _intendedSquareSource;
 
     public Dictionary<IPiece, List<ISquare>>? AllLegalMoves { get; private set; }
@@ -56,14 +56,14 @@ public class GameControl
     public event Action? OnDraw;
     public event Action? OnCheck;
     
-    public GameControl(List<IPlayer> players, Dictionary<IPlayer, List<IPiece>> playerPieces,
+    public GameControl(Dictionary<IPlayer, List<IPiece>> playerPieces,
                       IBoard board)
     {
-        this.Players = players;
         this.PlayerPieces = playerPieces;
         this.Board = board;
         this.State = GameState.Init;
         this._currentPlayerIndex = 0;
+        this._currentPlayer = playerPieces.ToList()[0].Key;
         this._fiftyMoveCounter = 0;
         this._intendedSquareSource = null;
         this.CurrentLegalMoves = null;
@@ -180,13 +180,12 @@ public class GameControl
 
         this.State = GameState.IntendingMove;
         this._currentPlayerIndex = 0;
-        this.AllLegalMoves = GetAllPiecesLegalMoves(GetCurrentPlayer());
+        this.AllLegalMoves = GetAllPiecesLegalMoves();
     }
 
     public IPlayer GetCurrentPlayer()
     {
-        IPlayer currentPlayer = Players[_currentPlayerIndex];
-        return currentPlayer;
+        return this._currentPlayer;
     }
 
     public void IntendMove(ISquare sourceSquare)
@@ -216,7 +215,7 @@ public class GameControl
 
     private bool IsValidPieceSelection(IPiece? piece)
     {
-        bool isValid = piece != null && piece.GetColor() == Players[_currentPlayerIndex].GetColor();
+        bool isValid = piece != null && piece.GetColor() == this._currentPlayer.GetColor();
         return isValid;
     }
 
@@ -408,15 +407,15 @@ public class GameControl
 
     public void NextTurn()
     {
-        this._currentPlayerIndex = (_currentPlayerIndex + 1) % Players.Count;
+        this._currentPlayerIndex = (_currentPlayerIndex + 1) % 2;
         ResetTurnState();
-
-        var currentPlayer = GetCurrentPlayer();
-        bool isInCheck = IsKingInCheck(currentPlayer.GetColor());
-        this.AllLegalMoves = GetAllPiecesLegalMoves(currentPlayer);
+        
+        this._currentPlayer = PlayerPieces.ToList()[this._currentPlayerIndex].Key;
+        bool isInCheck = IsKingInCheck(this._currentPlayer.GetColor());
+        this.AllLegalMoves = GetAllPiecesLegalMoves();
         int totalMoveCount = this.AllLegalMoves.Values.Sum(moves => moves.Count);
 
-        UpdateGameState(isInCheck, totalMoveCount, currentPlayer);
+        UpdateGameState(isInCheck, totalMoveCount, this._currentPlayer);
     }
 
     private void ResetTurnState()
@@ -787,10 +786,10 @@ public class GameControl
         return isLegal;
     }
 
-    public Dictionary<IPiece, List<ISquare>> GetAllPiecesLegalMoves(IPlayer currentPlayer)
+    public Dictionary<IPiece, List<ISquare>> GetAllPiecesLegalMoves()
     {
         var allLegalMoves = new Dictionary<IPiece, List<ISquare>>();
-        var activePieces = PlayerPieces[currentPlayer].Where(p => p.GetState() == PieceState.Active);
+        var activePieces = PlayerPieces[_currentPlayer].Where(p => p.GetState() == PieceState.Active);
 
         foreach (var piece in activePieces)
         {
@@ -804,7 +803,7 @@ public class GameControl
     public bool IsSquareAttacked(ISquare targetSquare, ColorType attackingColor)
     {
         bool isAttacked = false;
-        var attackingPlayer = Players.First(p => p.GetColor() == attackingColor);
+        var attackingPlayer = PlayerPieces.Keys.ToList().First(p => p.GetColor() == attackingColor);
 
         foreach (var attackingPiece in PlayerPieces[attackingPlayer])
         {
@@ -925,7 +924,7 @@ public class GameControl
 
     private ISquare? FindKingSquare(ColorType kingColor)
     {
-        var player = Players.First(p => p.GetColor() == kingColor);
+        var player = PlayerPieces.Keys.ToList().First(p => p.GetColor() == kingColor);
         var king = PlayerPieces[player].FirstOrDefault(p => p.GetPieceType() == PieceType.King && p.GetState() == PieceState.Active);
 
         ISquare? kingSquare = king != null ? Board.GetSquare(king.GetCurrentCoordinate()) : null;
@@ -972,7 +971,7 @@ public class GameControl
 
     public void HandleCheckmate()
     {
-        var currentPlayerColor = GetCurrentPlayer().GetColor();
+        var currentPlayerColor = this._currentPlayer.GetColor();
         this.State = currentPlayerColor == ColorType.White ? GameState.CheckmateBlackWin : GameState.CheckmateWhiteWin;
         OnCheckmate?.Invoke();
     }
