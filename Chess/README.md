@@ -24,7 +24,7 @@ Sebuah proyek game catur klasik yang berjalan di terminal konsol, dibangun mengg
 - **Platform:** Aplikasi Konsol
 - **Prinsip Desain:**
     - **Object-Oriented Programming (OOP):** Logika game dimodelkan menggunakan class dan interface yang jelas (`IPiece`, `IBoard`, dll.).
-    - **Separation of Concerns (SoC):** Logika game (`GameControl`), tampilan (`ChessDisplay`), dan perakitan objek (`GameFactory`) dipisahkan ke dalam kelas-kelas yang berbeda.
+    - **Separation of Concerns (SoC):** Logika game (`GameControl`) dan tampilan (`ChessDisplay`) dipisahkan ke dalam kelas-kelas yang berbeda.
     - **Dependency Injection (DI):** Menggunakan *Factory Pattern* untuk "menyuntikkan" dependensi, membuat komponen menjadi *loosely coupled* dan mudah diuji.
 
 ## Struktur Proyek
@@ -43,12 +43,10 @@ Struktur proyek diorganisir berdasarkan tanggung jawab setiap komponen:
 |-- /DTOs
 |   |-- MovablePieceInfo.cs   # Data untuk menampilkan bidak yang bisa bergerak
 |   |-- PendingMessage.cs     # Data untuk pesan event
+|   |-- Point.cs    
 |
 |-- /Enumerations
 |   |-- GameState.cs, PieceType.cs, dll.
-|
-|-- /Factories
-|   |-- GameFactory.cs        # Bertanggung jawab merakit semua objek game
 |
 |-- /View
 |   |-- ChessDisplay.cs       # Mengelola semua output ke konsol

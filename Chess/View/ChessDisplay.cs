@@ -44,7 +44,7 @@ namespace ChessGame.Display
         {
             _gameControl.InitGame();
             DisplayBoard(); 
-            DisplayGameMessage("🎮 Game Started!", MessageType.Success);
+            DisplayGameMessage("🎮 Game Started!", MessageType.Info);
             DisplayCurrentPlayer(_gameControl.GetCurrentPlayer().GetColor());
 
             while (!IsGameOver())
@@ -104,7 +104,7 @@ namespace ChessGame.Display
                         DisplayBoardWithLegalMoves(_gameControl.CurrentLegalMoves);
                         
                         DisplayGameMessage("Legal moves are highlighted in green.", MessageType.Success);
-                        DisplayPrompt("Enter the destination square (e.g., e4) or 'cancel' to select a different piece: ");
+                        DisplayPrompt("\nEnter the destination square (e.g., e4) or 'cancel' to select a different piece: ");
                         
                         string? destInput = Console.ReadLine()?.ToLower();
 
@@ -188,7 +188,6 @@ namespace ChessGame.Display
 
          private void SubscribeToGameEvents()
         {
-            _gameControl.OnMoveDone += () => HandleGameEvent(GameEventType.MoveDone);
             _gameControl.OnCapturePiece += (piece) => HandleGameEvent(GameEventType.CapturePiece, piece);
             _gameControl.OnCastling += (king, rook) => HandleGameEvent(GameEventType.Castling, new[] { king, rook });
             _gameControl.OnEnPassant += (pawn) => HandleGameEvent(GameEventType.EnPassant, pawn);
@@ -207,10 +206,6 @@ namespace ChessGame.Display
 
             switch (eventType)
             {
-                case GameEventType.MoveDone:
-                    text = "Move successful!";
-                    messageType = MessageType.Success;
-                    break;
                 case GameEventType.CapturePiece when data is IPiece piece:
                     text = $"🎯 A {piece.GetColor()} {piece.GetPieceType()} was captured!";
                     messageType = MessageType.Success;
@@ -313,7 +308,7 @@ namespace ChessGame.Display
 
         public void DisplayBoardWithLegalMoves(List<ISquare>? legalMoves = null)
         {
-            // Console.Clear();
+            Console.Clear();
             Console.OutputEncoding = System.Text.Encoding.UTF8;
             
             Console.WriteLine($"{TEXT_BLUE}    a  b  c  d  e  f  g  h {RESET}");

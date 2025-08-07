@@ -46,7 +46,6 @@ public class GameControl
     public ISquare? LastMoveDestination { get; private set; }
     public IPiece? LastMovedPiece { get; private set; }
 
-    public event Action? OnMoveDone;
     public event Action<IPiece>? OnCapturePiece;
     public event Action<IPiece, IPiece>? OnCastling;
     public event Action<IPiece>? OnEnPassant;
@@ -252,7 +251,6 @@ public class GameControl
         MovePiece(sourceSquare, destinationSquare, pieceToMove);
         UpdateMoveHistory(sourceSquare, destinationSquare, pieceToMove);
 
-        OnMoveDone?.Invoke();
         NextTurn();
 
         moveSuccessful = true;
