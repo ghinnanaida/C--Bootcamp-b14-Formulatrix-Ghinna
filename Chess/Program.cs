@@ -20,22 +20,37 @@ namespace ChessGame
                 new Player(ColorType.Black)
             };
 
+            var whitePieces = new List<IPiece>();
+            var blackPieces = new List<IPiece>();
+
+            var backRankOrder = new PieceType[] { PieceType.Rook, PieceType.Knight, PieceType.Bishop, PieceType.Queen, PieceType.King, PieceType.Bishop, PieceType.Knight, PieceType.Rook };
+
+            for (int i = 0; i < 8; i++)
+            {
+                whitePieces.Add(new Piece(ColorType.White, PieceState.Active, backRankOrder[i], new Point ()));
+                blackPieces.Add(new Piece(ColorType.Black, PieceState.Active, backRankOrder[i], new Point ()));
+
+                whitePieces.Add(new Piece(ColorType.White, PieceState.Active, PieceType.Pawn, new Point ()));
+                blackPieces.Add(new Piece(ColorType.Black, PieceState.Active, PieceType.Pawn, new Point ()));
+            }
+
             Dictionary<IPlayer, List<IPiece>> playerPieces = new Dictionary<IPlayer, List<IPiece>>
             {
-                {players[0], new List<IPiece>()},
-                {players[1], new List<IPiece>()}
+                {players[0], whitePieces},
+                {players[1], blackPieces}
             };
 
             IBoard board = new Board();
-            ChessDisplay _display = null;
 
-            Func<ColorType, PieceType> promotionChoiceProvider = (color) => _display.GetPromotionChoice(color);
-
-            GameControl _gameControl = new GameControl(players, playerPieces, board, promotionChoiceProvider);
+            GameControl gameControl = new GameControl(players, playerPieces, board);
             
-            _display = new ChessDisplay(_gameControl);
+            ChessDisplay display = new ChessDisplay(gameControl);
 
-            _display.Run();
+            Func<ColorType, PieceType> promotionChoiceProvider = (color) => display.GetPromotionChoice(color);
+
+            gameControl.PromotionChoiceProvider = promotionChoiceProvider;
+
+            display.Run();
         }
     }
 }

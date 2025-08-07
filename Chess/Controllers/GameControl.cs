@@ -36,10 +36,10 @@ public class GameControl
     public Dictionary<IPlayer, List<IPiece>> PlayerPieces { get; private set; }
     public IBoard Board { get; private set; }
     public GameState State { get; private set; }
+    public Func<ColorType, PieceType>? PromotionChoiceProvider { get; set; }
 
     private int _currentPlayerIndex;
     private ISquare? _intendedSquareSource;
-    private Func<ColorType, PieceType> _promotionChoiceProvider;
 
     public Dictionary<IPiece, List<ISquare>>? AllLegalMoves { get; private set; }
     public List<ISquare>? CurrentLegalMoves { get; private set; }
@@ -59,12 +59,11 @@ public class GameControl
     public event Action? OnCheck;
     
     public GameControl(List<IPlayer> players, Dictionary<IPlayer, List<IPiece>> playerPieces,
-                      IBoard board, Func<ColorType, PieceType> promotionChoiceProvider)
+                      IBoard board)
     {
         this.Players = players;
         this.PlayerPieces = playerPieces;
         this.Board = board;
-        this._promotionChoiceProvider = promotionChoiceProvider;
         this.State = GameState.Init;
         this._currentPlayerIndex = 0;
         this._fiftyMoveCounter = 0;
@@ -121,42 +120,69 @@ public class GameControl
 
     public void InitGame()
     {
-        InitializePawns();
-        InitializeBackRank(Players[0], 0);
-        InitializeBackRank(Players[1], 7);
+        var backRankOrder = new PieceType[] {
+            PieceType.Rook, PieceType.Knight, PieceType.Bishop, PieceType.Queen,
+            PieceType.King, PieceType.Bishop, PieceType.Knight, PieceType.Rook
+        };
+        foreach (var playerEntry in PlayerPieces)
+        {
+            var pieces = playerEntry.Value;
+            var playerColor = playerEntry.Key.GetColor();
+
+            var pawns = pieces.Where(p => p.GetPieceType() == PieceType.Pawn).ToList();
+            var rooks = pieces.Where(p => p.GetPieceType() == PieceType.Rook).ToList();
+            var knights = pieces.Where(p => p.GetPieceType() == PieceType.Knight).ToList();
+            var bishops = pieces.Where(p => p.GetPieceType() == PieceType.Bishop).ToList();
+            var queen = pieces.First(p => p.GetPieceType() == PieceType.Queen);
+            var king = pieces.First(p => p.GetPieceType() == PieceType.King);
+
+            int backRank = (playerColor == ColorType.White) ? 0 : 7;
+            int pawnRank = (playerColor == ColorType.White) ? 1 : 6;
+
+            for (int i = 0; i < 8; i++)
+            {
+                var pawnToPlace = pawns[i];
+                var position = new Point { X = i, Y = pawnRank };
+                
+                pawnToPlace.SetCurrentCoordinate(position);
+                this.Board.SetSquare(position, pawnToPlace);
+            }
+            
+            for (int i = 0; i < 8; i++)
+            {
+                IPiece pieceToPlace;
+                var pieceType = backRankOrder[i];
+                var position = new Point { X = i, Y = backRank };
+
+                switch (pieceType)
+                {
+                    case PieceType.Rook:
+                        pieceToPlace = (i == 0) ? rooks.First() : rooks.Last();
+                        break;
+                    case PieceType.Knight:
+                        pieceToPlace = (i == 1) ? knights.First() : knights.Last();
+                        break;
+                    case PieceType.Bishop:
+                        pieceToPlace = (i == 2) ? bishops.First() : bishops.Last();
+                        break;
+                    case PieceType.Queen:
+                        pieceToPlace = queen;
+                        break;
+                    case PieceType.King:
+                        pieceToPlace = king;
+                        break;
+                    default:
+                        continue; 
+                }
+                
+                pieceToPlace.SetCurrentCoordinate(position);
+                this.Board.SetSquare(position, pieceToPlace);
+            }
+        }
 
         this.State = GameState.IntendingMove;
         this._currentPlayerIndex = 0;
         this.AllLegalMoves = GetAllPiecesLegalMoves(GetCurrentPlayer());
-    }
-
-    private void InitializePawns()
-    {
-        int whitePawnRank = 1;
-        int blackPawnRank = 6;
-
-        for (int i = 0; i < BOARD_SIZE; i++)
-        {
-            var whitePawn = new Piece(ColorType.White, PieceState.Active, PieceType.Pawn, new Point { X = i, Y = whitePawnRank });
-            this.Board.SetSquare(new Point { X = i, Y = whitePawnRank }, whitePawn);
-            PlayerPieces[Players[0]].Add(whitePawn);
-
-            var blackPawn = new Piece(ColorType.Black, PieceState.Active, PieceType.Pawn, new Point { X = i, Y = blackPawnRank });
-            this.Board.SetSquare(new Point { X = i, Y = blackPawnRank }, blackPawn);
-            PlayerPieces[Players[1]].Add(blackPawn);
-        }
-    }
-
-    private void InitializeBackRank(IPlayer player, int rank)
-    {
-        var pieceOrder = new PieceType[] { PieceType.Rook, PieceType.Knight, PieceType.Bishop, PieceType.Queen, PieceType.King, PieceType.Bishop, PieceType.Knight, PieceType.Rook };
-
-        for (int x = 0; x < BOARD_SIZE; x++)
-        {
-            var piece = new Piece(player.GetColor(), PieceState.Active, pieceOrder[x], new Point { X = x, Y = rank });
-            this.Board.SetSquare(new Point { X = x, Y = rank }, piece);
-            PlayerPieces[player].Add(piece);
-        }
     }
 
     public IPlayer GetCurrentPlayer()
@@ -355,7 +381,7 @@ public class GameControl
 
     public IPiece HandlePawnPromotion(IPiece pieceToMove, ISquare destinationSquare)
     {
-        var promotionType = _promotionChoiceProvider(pieceToMove.GetColor());
+        var promotionType = PromotionChoiceProvider!(pieceToMove.GetColor());
         pieceToMove.SetPieceType(promotionType);
         OnPawnPromotion?.Invoke(pieceToMove);
         return pieceToMove;
