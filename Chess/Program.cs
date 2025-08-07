@@ -18,12 +18,12 @@ namespace ChessGame
             var whitePieces = new List<IPiece>();
             var blackPieces = new List<IPiece>();
 
-            var backRankOrder = new PieceType[] { PieceType.Rook, PieceType.Knight, PieceType.Bishop, PieceType.Queen, PieceType.King, PieceType.Bishop, PieceType.Knight, PieceType.Rook };
+            var backRankPieceType = new PieceType[] { PieceType.Rook, PieceType.Knight, PieceType.Bishop, PieceType.Queen, PieceType.King, PieceType.Bishop, PieceType.Knight, PieceType.Rook };
 
             for (int i = 0; i < 8; i++)
             {
-                whitePieces.Add(new Piece(ColorType.White, PieceState.Active, backRankOrder[i], new Point ()));
-                blackPieces.Add(new Piece(ColorType.Black, PieceState.Active, backRankOrder[i], new Point ()));
+                whitePieces.Add(new Piece(ColorType.White, PieceState.Active, backRankPieceType[i], new Point ()));
+                blackPieces.Add(new Piece(ColorType.Black, PieceState.Active, backRankPieceType[i], new Point ()));
 
                 whitePieces.Add(new Piece(ColorType.White, PieceState.Active, PieceType.Pawn, new Point ()));
                 blackPieces.Add(new Piece(ColorType.Black, PieceState.Active, PieceType.Pawn, new Point ()));

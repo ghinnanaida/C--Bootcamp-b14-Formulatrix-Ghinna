@@ -47,7 +47,7 @@ namespace ChessGame.Display
             DisplayGameMessage("🎮 Game Started!", MessageType.Info);
             DisplayCurrentPlayer(_gameControl.GetCurrentPlayer().GetColor());
 
-            while (!IsGameOver())
+            while (!_gameControl.IsGameOver())
             {
                 var movablePieces = _gameControl.GetMovablePiecesList();
                 if (movablePieces.Count == 0)
@@ -170,20 +170,6 @@ namespace ChessGame.Display
 
             DisplayGameMessage("\n🏁 Game Over!", MessageType.Info);
             DisplayGameState(_gameControl.State);
-        }
-
-        private bool IsGameOver()
-        {
-            GameState[] gameOverStates = {
-                GameState.CheckmateWhiteWin,
-                GameState.CheckmateBlackWin,
-                GameState.Stalemate,
-                GameState.FiftyMoveDraw,
-                GameState.Resignation
-            };
-
-            bool result = gameOverStates.Contains(_gameControl.State);
-            return result;
         }
 
          private void SubscribeToGameEvents()

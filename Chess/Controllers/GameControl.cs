@@ -963,6 +963,20 @@ public class GameControl
         return movablePiecesOrdered;
     }
 
+    public bool IsGameOver()
+    {
+        GameState[] gameOverStates = {
+            GameState.CheckmateWhiteWin,
+            GameState.CheckmateBlackWin,
+            GameState.Stalemate,
+            GameState.FiftyMoveDraw,
+            GameState.Resignation
+        };
+
+        bool result = gameOverStates.Contains(this.State);
+        return result;
+    }
+
     public void HandleCheck() 
     {
         this.State = GameState.Check;
