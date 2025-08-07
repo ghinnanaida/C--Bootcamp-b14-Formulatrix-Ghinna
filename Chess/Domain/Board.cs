@@ -22,7 +22,8 @@ public class Board : IBoard
         {
             throw new ArgumentOutOfRangeException(nameof(coordinate), "Coordinate is out of board bounds.");
         }
-        return this.Squares[coordinate.X, coordinate.Y];
+        var square = this.Squares[coordinate.X, coordinate.Y];
+        return square;
     }
 
     public void SetSquare(Point coordinate, IPiece? piece)

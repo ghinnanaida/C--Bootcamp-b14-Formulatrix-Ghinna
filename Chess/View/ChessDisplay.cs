@@ -25,12 +25,6 @@ namespace ChessGame.Display
         private const string BLACK_PAWN = "\u265f";
 
         private const string RESET = "\u001B[0m";
-        private const string CLEAR_SCREEN = "\u001B[2J\u001B[H";
-        
-        private const string BG_LIGHT_SQUARE = "\u001B[48;5;222m";
-        private const string BG_DARK_SQUARE = "\u001B[48;5;94m";
-        private const string BG_LEGAL_MOVE = "\u001B[48;5;46m";   
-        private const string BG_SELECTED = "\u001B[48;5;226m";     
         
         private const string TEXT_BLUE = "\u001B[94m"; 
         private const string TEXT_GREEN = "\u001B[92m"; 
@@ -44,6 +38,146 @@ namespace ChessGame.Display
         {
             _gameControl = gameControl;
             SubscribeToGameEvents();
+        }
+
+        public void Run()
+        {
+            _gameControl.InitGame();
+            DisplayBoard(); 
+            DisplayGameMessage("🎮 Game Started!", MessageType.Success);
+            DisplayCurrentPlayer(_gameControl.GetCurrentPlayer().GetColor());
+
+            while (!IsGameOver())
+            {
+                var movablePieces = _gameControl.GetMovablePiecesList();
+                if (movablePieces.Count == 0)
+                {
+                    DisplayGameMessage("No legal moves available!", MessageType.Error);
+                    break;
+                }
+
+                DisplayMovablePieces(movablePieces);
+                
+                DisplayPrompt("\nSelect a piece to move by entering its number, 'resign' to concede, or 'exit' to quit: ");
+                string? input = Console.ReadLine()?.ToLower();
+
+                if (string.IsNullOrWhiteSpace(input))
+                {
+                    DisplayGameMessage("Invalid input. Please enter a piece number.", MessageType.Error);
+                    continue;
+                }
+
+                if (input == "resign")
+                {
+                    _gameControl.HandleResign(_gameControl.GetCurrentPlayer().GetColor());
+                    break; 
+                }
+                
+                if (input == "exit")
+                {
+                    DisplayGameMessage("👋 Exiting game.", MessageType.Info);
+                    break;
+                }
+
+                if (!int.TryParse(input, out int pieceNumber) || pieceNumber < 1 || pieceNumber > movablePieces.Count)
+                {
+                    DisplayGameMessage($"Invalid selection. Please enter a number between 1 and {movablePieces.Count}.", MessageType.Error);
+                    continue;
+                }
+
+                var selectedPieceInfo = movablePieces[pieceNumber - 1];
+                ISquare sourceSquare = _gameControl.Board.GetSquare(selectedPieceInfo.Piece.GetCurrentCoordinate());
+
+                try
+                {
+                    _gameControl.IntendMove(sourceSquare);
+
+                    if (_gameControl.State == GameState.MakingMove && _gameControl.CurrentLegalMoves != null)
+                    {
+                        if (_gameControl.CurrentLegalMoves.Count == 0)
+                        {
+                            DisplayGameMessage("This piece has no legal moves. Please select another piece.", MessageType.Warning);
+                            _gameControl.CancelMove();
+                            continue;
+                        }
+
+                        DisplayBoardWithLegalMoves(_gameControl.CurrentLegalMoves);
+                        
+                        DisplayGameMessage("Legal moves are highlighted in green.", MessageType.Success);
+                        DisplayPrompt("Enter the destination square (e.g., e4) or 'cancel' to select a different piece: ");
+                        
+                        string? destInput = Console.ReadLine()?.ToLower();
+
+                        if (string.IsNullOrWhiteSpace(destInput))
+                        {
+                            DisplayGameMessage("Invalid input.", MessageType.Error);
+                            _gameControl.CancelMove();
+                            continue;
+                        }
+
+                        if (destInput == "cancel")
+                        {
+                            _gameControl.CancelMove();
+                            DisplayBoard();
+                            continue;
+                        }
+
+                        Point? destCoord = _gameControl.ParseAlgebraicNotation(destInput);
+                        if (destCoord == null)
+                        {
+                            DisplayGameMessage("Invalid coordinate format. Use 'a1' to 'h8'.", MessageType.Error);
+                            _gameControl.CancelMove();
+                            continue;
+                        }
+
+                        ISquare destSquare = _gameControl.Board.GetSquare(destCoord.Value);
+                        
+                        if (!_gameControl.CurrentLegalMoves.Contains(destSquare))
+                        {
+                            DisplayGameMessage("Invalid move. Please enter a valid destination from the highlighted squares.", MessageType.Error);
+                            continue;
+                        }
+
+                        bool moveSuccessful = _gameControl.MakeMove(destSquare);
+                        if (moveSuccessful)
+                        {
+                            DisplayBoard(); 
+                            DisplayCurrentPlayer(_gameControl.GetCurrentPlayer().GetColor());
+                        }
+                        else
+                        {
+                            DisplayGameMessage("Move failed unexpectedly. Please try again.", MessageType.Error);
+                            _gameControl.CancelMove();
+                        }
+                    }
+                    else
+                    {
+                        DisplayGameMessage("No piece at the selected source square, or it's not your piece. Please select a valid piece to move.", MessageType.Error);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    DisplayGameMessage($"An error occurred during move processing: {ex.Message}", MessageType.Error);
+                    _gameControl.CancelMove();
+                }
+            }
+
+            DisplayGameMessage("\n🏁 Game Over!", MessageType.Info);
+            DisplayGameState(_gameControl.State);
+        }
+
+        private bool IsGameOver()
+        {
+            GameState[] gameOverStates = {
+                GameState.CheckmateWhiteWin,
+                GameState.CheckmateBlackWin,
+                GameState.Stalemate,
+                GameState.FiftyMoveDraw,
+                GameState.Resignation
+            };
+
+            bool result = gameOverStates.Contains(_gameControl.State);
+            return result;
         }
 
          private void SubscribeToGameEvents()
@@ -68,6 +202,8 @@ namespace ChessGame.Display
             switch (eventType)
             {
                 case GameEventType.MoveDone:
+                    text = "Move successful!";
+                    messageType = MessageType.Success;
                     break;
                 case GameEventType.CapturePiece when data is IPiece piece:
                     text = $"🎯 A {piece.GetColor()} {piece.GetPieceType()} was captured!";
@@ -90,12 +226,22 @@ namespace ChessGame.Display
                     messageType = MessageType.Warning;
                     break;
                 case GameEventType.Checkmate:
+                    text = "🎯 Checkmate condition met!";
+                    messageType = MessageType.Info;
                     break;
                 case GameEventType.Stalemate:
+                    text = "🤝 Stalemate condition met!";
+                    messageType = MessageType.Info;
                     break;
                 case GameEventType.Draw:
+                    text = "🤝 Draw by fifty move rule";
+                    messageType = MessageType.Info;
                     break;
                 case GameEventType.Resign when data is ColorType color:
+                    text = color == ColorType.White 
+                            ? "🏃 White has resigned. Black wins!"
+                            : "🏃 Black has resigned. White wins!";
+                    messageType = MessageType.Info;
                     break;
             }
 
@@ -217,9 +363,9 @@ namespace ChessGame.Display
             }
         }
 
-        public void DisplayGameMessage(string message, MessageType messageType = MessageType.Info)
+        private string GetColorCodeForMessageType(MessageType messageType)
         {
-            string color = messageType switch
+            var colorCode = messageType switch
             {
                 MessageType.Success => TEXT_GREEN,
                 MessageType.Warning => TEXT_YELLOW,
@@ -227,8 +373,34 @@ namespace ChessGame.Display
                 MessageType.Info => TEXT_BLUE,
                 _ => RESET
             };
+            return colorCode; 
+        }
 
-            Console.WriteLine($"{color}{message}{RESET}");
+        public void DisplayGameMessage(string message, MessageType messageType = MessageType.Info)
+        {
+            string icon = "";
+            switch (messageType)
+            {
+                case MessageType.Success:
+                    icon = "✅ ";
+                    break;
+                case MessageType.Warning:
+                    icon = "⚠️ ";
+                    break;
+                case MessageType.Error:
+                    icon = "❌ ";
+                    break;
+            }
+
+            string colorCode = GetColorCodeForMessageType(messageType);
+            Console.WriteLine($"{colorCode}{icon}{message}{RESET}");
+
+        }
+        
+        public void DisplayPrompt(string prompt, MessageType messageType = MessageType.Info)
+        {
+            string color = GetColorCodeForMessageType(messageType);
+            Console.Write($"{color}{prompt}{RESET}");
         }
 
         public void DisplayGameState(GameState state)
@@ -267,35 +439,6 @@ namespace ChessGame.Display
             Console.ResetColor();
         }
 
-        public void DisplayPrompt(string prompt, MessageType messageType = MessageType.Info)
-        {
-            string color = messageType switch
-            {
-                MessageType.Success => TEXT_GREEN,
-                MessageType.Warning => TEXT_YELLOW,
-                MessageType.Error => TEXT_RED,
-                MessageType.Info => TEXT_BLUE,
-                _ => RESET
-            };
-
-            Console.Write($"{color}{prompt}{RESET}");
-        }
-
-        public void DisplayError(string errorMessage)
-        {
-            DisplayGameMessage($"❌ {errorMessage}", MessageType.Error);
-        }
-
-        public void DisplaySuccess(string successMessage)
-        {
-            DisplayGameMessage($"✅ {successMessage}", MessageType.Success);
-        }
-
-        public void DisplayWarning(string warningMessage)
-        {
-            DisplayGameMessage($"⚠️ {warningMessage}", MessageType.Warning);
-        }
-
         public PieceType GetPromotionChoice(ColorType color)
         {
             Console.WriteLine($"\n{TEXT_YELLOW}🔄 {color} pawn reached the end! Choose promotion:{RESET}");
@@ -322,7 +465,7 @@ namespace ChessGame.Display
                     return result;
                 }
 
-                DisplayError("Invalid choice. Please enter 1-4: ");
+                DisplayGameMessage("Invalid choice. Please enter 1-4: ", MessageType.Error);
             }
         }
 
