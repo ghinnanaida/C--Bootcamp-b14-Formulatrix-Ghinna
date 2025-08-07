@@ -366,7 +366,7 @@ public class GameControl
     public bool IsPawnPromotion(IPiece piece)
     {
         int promotionRank = piece!.GetColor() == ColorType.White ? 7 : 0;
-        var lastPosition = this.LastMoveDestination.GetPosition();
+        var lastPosition = this.LastMoveDestination!.GetPosition();
         bool isPromotion = piece!.GetPieceType() == PieceType.Pawn &&
                          lastPosition.Y ==promotionRank;
         return isPromotion;

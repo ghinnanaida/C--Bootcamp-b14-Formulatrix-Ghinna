@@ -142,7 +142,7 @@ namespace ChessGame.Display
                         if (moveSuccessful)
                         {
                             var piece = _gameControl.LastMovedPiece;
-                            if (_gameControl.IsPawnPromotion(piece))
+                            if (piece != null && _gameControl.IsPawnPromotion(piece))
                             {
                                 var pieceType = GetPromotionChoice(piece.GetColor());
                                 _gameControl.HandlePawnPromotion(piece, pieceType);
