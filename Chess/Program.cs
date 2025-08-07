@@ -46,10 +46,6 @@ namespace ChessGame
             
             ChessDisplay display = new ChessDisplay(gameControl);
 
-            Func<ColorType, PieceType> promotionChoiceProvider = (color) => display.GetPromotionChoice(color);
-
-            gameControl.PromotionChoiceProvider = promotionChoiceProvider;
-
             display.Run();
         }
     }

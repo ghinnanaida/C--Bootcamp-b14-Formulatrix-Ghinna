@@ -141,6 +141,12 @@ namespace ChessGame.Display
                         bool moveSuccessful = _gameControl.MakeMove(destSquare);
                         if (moveSuccessful)
                         {
+                            var piece = _gameControl.LastMovedPiece;
+                            if (_gameControl.IsPawnPromotion(piece))
+                            {
+                                var pieceType = GetPromotionChoice(piece.GetColor());
+                                _gameControl.HandlePawnPromotion(piece, pieceType);
+                            }
                             DisplayBoard(); 
                             DisplayCurrentPlayer(_gameControl.GetCurrentPlayer().GetColor());
                         }
@@ -307,7 +313,7 @@ namespace ChessGame.Display
 
         public void DisplayBoardWithLegalMoves(List<ISquare>? legalMoves = null)
         {
-            Console.Clear();
+            // Console.Clear();
             Console.OutputEncoding = System.Text.Encoding.UTF8;
             
             Console.WriteLine($"{TEXT_BLUE}    a  b  c  d  e  f  g  h {RESET}");

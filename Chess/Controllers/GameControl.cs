@@ -36,7 +36,6 @@ public class GameControl
     public Dictionary<IPlayer, List<IPiece>> PlayerPieces { get; private set; }
     public IBoard Board { get; private set; }
     public GameState State { get; private set; }
-    public Func<ColorType, PieceType>? PromotionChoiceProvider { get; set; }
 
     private int _currentPlayerIndex;
     private ISquare? _intendedSquareSource;
@@ -147,7 +146,7 @@ public class GameControl
                 pawnToPlace.SetCurrentCoordinate(position);
                 this.Board.SetSquare(position, pawnToPlace);
             }
-            
+
             for (int i = 0; i < 8; i++)
             {
                 IPiece pieceToPlace;
@@ -303,11 +302,6 @@ public class GameControl
         {
             HandleCastling(sourceSquare, destinationSquare);
         }
-
-        if (IsPawnPromotion(pieceToMove, destinationSquare))
-        {
-            HandlePawnPromotion(pieceToMove, destinationSquare);
-        }
     }
 
     private bool IsEnPassantMove(IPiece pieceToMove, ISquare sourceSquare, ISquare destinationSquare)
@@ -371,20 +365,20 @@ public class GameControl
         }
     }
 
-    private bool IsPawnPromotion(IPiece pieceToMove, ISquare destinationSquare)
+    public bool IsPawnPromotion(IPiece piece)
     {
-        int promotionRank = pieceToMove.GetColor() == ColorType.White ? 7 : 0;
-        bool isPromotion = pieceToMove.GetPieceType() == PieceType.Pawn &&
-               destinationSquare.GetPosition().Y == promotionRank;
+        int promotionRank = piece!.GetColor() == ColorType.White ? 7 : 0;
+        var lastPosition = this.LastMoveDestination.GetPosition();
+        bool isPromotion = piece!.GetPieceType() == PieceType.Pawn &&
+                         lastPosition.Y ==promotionRank;
         return isPromotion;
     }
 
-    public IPiece HandlePawnPromotion(IPiece pieceToMove, ISquare destinationSquare)
+    public IPiece HandlePawnPromotion(IPiece piece, PieceType pieceType)
     {
-        var promotionType = PromotionChoiceProvider!(pieceToMove.GetColor());
-        pieceToMove.SetPieceType(promotionType);
-        OnPawnPromotion?.Invoke(pieceToMove);
-        return pieceToMove;
+        piece.SetPieceType(pieceType);
+        OnPawnPromotion?.Invoke(piece);
+        return piece;
     }
 
     private void MovePiece(ISquare sourceSquare, ISquare destinationSquare, IPiece pieceToMove)
