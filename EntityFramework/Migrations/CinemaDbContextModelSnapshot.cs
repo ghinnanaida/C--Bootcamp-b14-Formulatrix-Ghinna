@@ -49,6 +49,31 @@ namespace EntityFramework.Migrations
                         {
                             Id = 3,
                             Name = "Drama"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "Sci-Fi"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Name = "Horror"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Name = "Romance"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Name = "Thriller"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Name = "Animation"
                         });
                 });
 
@@ -89,29 +114,137 @@ namespace EntityFramework.Migrations
                         new
                         {
                             Id = 1,
-                            Description = "A masked vigilante fights crime in Gotham City.",
-                            GenreId = 1,
-                            Rating = 9.0,
-                            ReleaseDate = new DateTime(2008, 7, 18, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Title = "The Dark Knight"
+                            Description = "An epic journey through space.",
+                            GenreId = 4,
+                            Rating = 8.5,
+                            ReleaseDate = new DateTime(2023, 5, 12, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Title = "Cosmic Voyager"
                         },
                         new
                         {
                             Id = 2,
-                            Description = "The story of a man with a low IQ who accomplished great things.",
-                            GenreId = 3,
-                            Rating = 8.8000000000000007,
-                            ReleaseDate = new DateTime(1994, 7, 6, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Title = "Forrest Gump"
+                            Description = "A comedian's final show.",
+                            GenreId = 2,
+                            Rating = 7.7999999999999998,
+                            ReleaseDate = new DateTime(2022, 11, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Title = "The Last Laugh"
                         },
                         new
                         {
                             Id = 3,
-                            Description = "Two co-dependent high school seniors are forced to deal with separation anxiety.",
+                            Description = "A historian discovers a secret.",
+                            GenreId = 3,
+                            Rating = 8.9000000000000004,
+                            ReleaseDate = new DateTime(2024, 2, 20, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Title = "Echoes of Time"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Description = "A detective hunts a killer.",
+                            GenreId = 7,
+                            Rating = 8.1999999999999993,
+                            ReleaseDate = new DateTime(2023, 9, 5, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Title = "Midnight Shadow"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Description = "Robots take over the world.",
+                            GenreId = 1,
+                            Rating = 7.9000000000000004,
+                            ReleaseDate = new DateTime(2024, 6, 25, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Title = "Cybernetic Dawn"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Description = "Something stirs in the woods.",
+                            GenreId = 5,
+                            Rating = 7.5,
+                            ReleaseDate = new DateTime(2022, 10, 31, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Title = "Whispering Pines"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Description = "A love story in Paris.",
+                            GenreId = 6,
+                            Rating = 8.0999999999999996,
+                            ReleaseDate = new DateTime(2023, 2, 14, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Title = "Parisian Heartbeat"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Description = "Giant robots fighting monsters.",
+                            GenreId = 1,
+                            Rating = 7.0999999999999996,
+                            ReleaseDate = new DateTime(2022, 7, 19, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Title = "Giga-Mech Smash"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Description = "A magical book comes to life.",
+                            GenreId = 8,
+                            Rating = 8.5999999999999996,
+                            ReleaseDate = new DateTime(2024, 1, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Title = "The Scribbler's Quest"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Description = "A submarine crew faces terror.",
+                            GenreId = 7,
+                            Rating = 7.2999999999999998,
+                            ReleaseDate = new DateTime(2023, 8, 8, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Title = "Silent Depths"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Description = "An intergalactic tournament.",
+                            GenreId = 4,
+                            Rating = 7.7000000000000002,
+                            ReleaseDate = new DateTime(2022, 4, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Title = "Galactic Gladiators"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            Description = "A family uncovers dark secrets.",
+                            GenreId = 3,
+                            Rating = 8.4000000000000004,
+                            ReleaseDate = new DateTime(2024, 3, 22, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Title = "The Inheritance"
+                        },
+                        new
+                        {
+                            Id = 13,
+                            Description = "Two book lovers find each other.",
+                            GenreId = 6,
+                            Rating = 7.9000000000000004,
+                            ReleaseDate = new DateTime(2022, 5, 30, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Title = "Love in the Library"
+                        },
+                        new
+                        {
+                            Id = 14,
+                            Description = "A court jester's hilarious mishaps.",
                             GenreId = 2,
-                            Rating = 7.5999999999999996,
-                            ReleaseDate = new DateTime(2007, 8, 17, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Title = "Superbad"
+                            Rating = 7.2000000000000002,
+                            ReleaseDate = new DateTime(2023, 4, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Title = "Jester's Folly"
+                        },
+                        new
+                        {
+                            Id = 15,
+                            Description = "A terrifying presence haunts a spaceship.",
+                            GenreId = 5,
+                            Rating = 8.0,
+                            ReleaseDate = new DateTime(2024, 9, 13, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Title = "The Void Beckons"
                         });
                 });
 
@@ -150,33 +283,281 @@ namespace EntityFramework.Migrations
                         {
                             Id = 1,
                             MovieId = 1,
-                            Price = 50000m,
-                            ShowTime = new DateTime(2025, 8, 12, 19, 0, 0, 0, DateTimeKind.Unspecified),
+                            Price = 45000m,
+                            ShowTime = new DateTime(2025, 8, 12, 13, 0, 0, 0, DateTimeKind.Unspecified),
                             StudioId = 1
                         },
                         new
                         {
                             Id = 2,
-                            MovieId = 1,
-                            Price = 65000m,
-                            ShowTime = new DateTime(2025, 8, 12, 21, 30, 0, 0, DateTimeKind.Unspecified),
+                            MovieId = 2,
+                            Price = 45000m,
+                            ShowTime = new DateTime(2025, 8, 12, 13, 30, 0, 0, DateTimeKind.Unspecified),
                             StudioId = 2
                         },
                         new
                         {
                             Id = 3,
-                            MovieId = 2,
+                            MovieId = 1,
                             Price = 45000m,
-                            ShowTime = new DateTime(2025, 8, 12, 19, 15, 0, 0, DateTimeKind.Unspecified),
-                            StudioId = 3
+                            ShowTime = new DateTime(2025, 8, 12, 15, 30, 0, 0, DateTimeKind.Unspecified),
+                            StudioId = 1
                         },
                         new
                         {
                             Id = 4,
+                            MovieId = 4,
+                            Price = 45000m,
+                            ShowTime = new DateTime(2025, 8, 12, 16, 0, 0, 0, DateTimeKind.Unspecified),
+                            StudioId = 3
+                        },
+                        new
+                        {
+                            Id = 5,
+                            MovieId = 5,
+                            Price = 55000m,
+                            ShowTime = new DateTime(2025, 8, 12, 18, 45, 0, 0, DateTimeKind.Unspecified),
+                            StudioId = 4
+                        },
+                        new
+                        {
+                            Id = 6,
+                            MovieId = 1,
+                            Price = 55000m,
+                            ShowTime = new DateTime(2025, 8, 12, 19, 0, 0, 0, DateTimeKind.Unspecified),
+                            StudioId = 3
+                        },
+                        new
+                        {
+                            Id = 7,
+                            MovieId = 4,
+                            Price = 55000m,
+                            ShowTime = new DateTime(2025, 8, 12, 19, 15, 0, 0, DateTimeKind.Unspecified),
+                            StudioId = 5
+                        },
+                        new
+                        {
+                            Id = 8,
+                            MovieId = 5,
+                            Price = 55000m,
+                            ShowTime = new DateTime(2025, 8, 12, 21, 0, 0, 0, DateTimeKind.Unspecified),
+                            StudioId = 4
+                        },
+                        new
+                        {
+                            Id = 9,
+                            MovieId = 6,
+                            Price = 55000m,
+                            ShowTime = new DateTime(2025, 8, 12, 21, 30, 0, 0, DateTimeKind.Unspecified),
+                            StudioId = 6
+                        },
+                        new
+                        {
+                            Id = 10,
+                            MovieId = 7,
+                            Price = 55000m,
+                            ShowTime = new DateTime(2025, 8, 12, 21, 45, 0, 0, DateTimeKind.Unspecified),
+                            StudioId = 7
+                        },
+                        new
+                        {
+                            Id = 11,
+                            MovieId = 8,
+                            Price = 45000m,
+                            ShowTime = new DateTime(2025, 8, 12, 14, 0, 0, 0, DateTimeKind.Unspecified),
+                            StudioId = 5
+                        },
+                        new
+                        {
+                            Id = 12,
+                            MovieId = 9,
+                            Price = 45000m,
+                            ShowTime = new DateTime(2025, 8, 12, 16, 30, 0, 0, DateTimeKind.Unspecified),
+                            StudioId = 6
+                        },
+                        new
+                        {
+                            Id = 13,
+                            MovieId = 8,
+                            Price = 55000m,
+                            ShowTime = new DateTime(2025, 8, 12, 19, 0, 0, 0, DateTimeKind.Unspecified),
+                            StudioId = 5
+                        },
+                        new
+                        {
+                            Id = 14,
+                            MovieId = 10,
+                            Price = 45000m,
+                            ShowTime = new DateTime(2025, 8, 13, 13, 0, 0, 0, DateTimeKind.Unspecified),
+                            StudioId = 1
+                        },
+                        new
+                        {
+                            Id = 15,
+                            MovieId = 11,
+                            Price = 45000m,
+                            ShowTime = new DateTime(2025, 8, 13, 13, 30, 0, 0, DateTimeKind.Unspecified),
+                            StudioId = 2
+                        },
+                        new
+                        {
+                            Id = 16,
+                            MovieId = 10,
+                            Price = 45000m,
+                            ShowTime = new DateTime(2025, 8, 13, 15, 30, 0, 0, DateTimeKind.Unspecified),
+                            StudioId = 1
+                        },
+                        new
+                        {
+                            Id = 17,
+                            MovieId = 12,
+                            Price = 45000m,
+                            ShowTime = new DateTime(2025, 8, 13, 16, 0, 0, 0, DateTimeKind.Unspecified),
+                            StudioId = 3
+                        },
+                        new
+                        {
+                            Id = 18,
+                            MovieId = 13,
+                            Price = 55000m,
+                            ShowTime = new DateTime(2025, 8, 13, 18, 45, 0, 0, DateTimeKind.Unspecified),
+                            StudioId = 4
+                        },
+                        new
+                        {
+                            Id = 19,
+                            MovieId = 11,
+                            Price = 55000m,
+                            ShowTime = new DateTime(2025, 8, 13, 19, 0, 0, 0, DateTimeKind.Unspecified),
+                            StudioId = 3
+                        },
+                        new
+                        {
+                            Id = 20,
+                            MovieId = 14,
+                            Price = 55000m,
+                            ShowTime = new DateTime(2025, 8, 13, 19, 15, 0, 0, DateTimeKind.Unspecified),
+                            StudioId = 5
+                        },
+                        new
+                        {
+                            Id = 21,
+                            MovieId = 13,
+                            Price = 55000m,
+                            ShowTime = new DateTime(2025, 8, 13, 21, 0, 0, 0, DateTimeKind.Unspecified),
+                            StudioId = 4
+                        },
+                        new
+                        {
+                            Id = 22,
+                            MovieId = 15,
+                            Price = 55000m,
+                            ShowTime = new DateTime(2025, 8, 13, 21, 30, 0, 0, DateTimeKind.Unspecified),
+                            StudioId = 6
+                        },
+                        new
+                        {
+                            Id = 23,
+                            MovieId = 1,
+                            Price = 55000m,
+                            ShowTime = new DateTime(2025, 8, 13, 21, 45, 0, 0, DateTimeKind.Unspecified),
+                            StudioId = 7
+                        },
+                        new
+                        {
+                            Id = 24,
+                            MovieId = 2,
+                            Price = 45000m,
+                            ShowTime = new DateTime(2025, 8, 14, 13, 0, 0, 0, DateTimeKind.Unspecified),
+                            StudioId = 1
+                        },
+                        new
+                        {
+                            Id = 25,
                             MovieId = 3,
                             Price = 45000m,
-                            ShowTime = new DateTime(2025, 8, 13, 20, 0, 0, 0, DateTimeKind.Unspecified),
+                            ShowTime = new DateTime(2025, 8, 14, 13, 30, 0, 0, DateTimeKind.Unspecified),
+                            StudioId = 2
+                        },
+                        new
+                        {
+                            Id = 26,
+                            MovieId = 2,
+                            Price = 45000m,
+                            ShowTime = new DateTime(2025, 8, 14, 15, 30, 0, 0, DateTimeKind.Unspecified),
                             StudioId = 1
+                        },
+                        new
+                        {
+                            Id = 27,
+                            MovieId = 6,
+                            Price = 45000m,
+                            ShowTime = new DateTime(2025, 8, 14, 16, 0, 0, 0, DateTimeKind.Unspecified),
+                            StudioId = 3
+                        },
+                        new
+                        {
+                            Id = 28,
+                            MovieId = 7,
+                            Price = 55000m,
+                            ShowTime = new DateTime(2025, 8, 14, 18, 45, 0, 0, DateTimeKind.Unspecified),
+                            StudioId = 4
+                        },
+                        new
+                        {
+                            Id = 29,
+                            MovieId = 9,
+                            Price = 55000m,
+                            ShowTime = new DateTime(2025, 8, 14, 19, 0, 0, 0, DateTimeKind.Unspecified),
+                            StudioId = 3
+                        },
+                        new
+                        {
+                            Id = 30,
+                            MovieId = 12,
+                            Price = 55000m,
+                            ShowTime = new DateTime(2025, 8, 14, 19, 15, 0, 0, DateTimeKind.Unspecified),
+                            StudioId = 5
+                        },
+                        new
+                        {
+                            Id = 31,
+                            MovieId = 14,
+                            Price = 55000m,
+                            ShowTime = new DateTime(2025, 8, 14, 21, 0, 0, 0, DateTimeKind.Unspecified),
+                            StudioId = 4
+                        },
+                        new
+                        {
+                            Id = 32,
+                            MovieId = 15,
+                            Price = 55000m,
+                            ShowTime = new DateTime(2025, 8, 14, 21, 30, 0, 0, DateTimeKind.Unspecified),
+                            StudioId = 6
+                        },
+                        new
+                        {
+                            Id = 33,
+                            MovieId = 1,
+                            Price = 55000m,
+                            ShowTime = new DateTime(2025, 8, 14, 21, 45, 0, 0, DateTimeKind.Unspecified),
+                            StudioId = 7
+                        },
+                        new
+                        {
+                            Id = 34,
+                            MovieId = 11,
+                            Price = 45000m,
+                            ShowTime = new DateTime(2025, 8, 14, 14, 0, 0, 0, DateTimeKind.Unspecified),
+                            StudioId = 2
+                        },
+                        new
+                        {
+                            Id = 35,
+                            MovieId = 5,
+                            Price = 45000m,
+                            ShowTime = new DateTime(2025, 8, 14, 16, 30, 0, 0, DateTimeKind.Unspecified),
+                            StudioId = 7
                         });
                 });
 
@@ -202,17 +583,37 @@ namespace EntityFramework.Migrations
                         new
                         {
                             Id = 1,
-                            Name = "Studio A"
+                            Name = "Studio 1"
                         },
                         new
                         {
                             Id = 2,
-                            Name = "Studio B (IMAX)"
+                            Name = "Studio 2"
                         },
                         new
                         {
                             Id = 3,
-                            Name = "Studio C"
+                            Name = "Studio 3 (IMAX)"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "Studio 4 (Premiere)"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Name = "Studio 5"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Name = "Studio 6"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Name = "Studio 7"
                         });
                 });
 
