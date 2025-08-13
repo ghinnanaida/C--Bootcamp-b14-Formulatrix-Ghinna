@@ -2,10 +2,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace BookJournal.DTOs
 {
-    public class UserDTO  
+    public class UserCreateDTO
     {
-        public int Id { get; set; }
-
         [Required]
         public string UserName { get; set; } = string.Empty;
 
@@ -13,7 +11,5 @@ namespace BookJournal.DTOs
         public string? Email { get; set; }
 
         public string? FullName { get; set; }
-
-        public DateTime RegistrationDate { get; set; }
     }
 }

@@ -2,13 +2,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace BookJournal.DTOs
 {
-    public class GenreDTO
+    public class GenreCreateDTO
     {
-        public int Id { get; set; }
-
         [Required]
         public string Name { get; set; } = string.Empty;
 
-        public string? Description { get; set; }
     }
 }
