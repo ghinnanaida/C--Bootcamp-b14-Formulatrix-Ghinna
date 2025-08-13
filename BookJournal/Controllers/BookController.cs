@@ -17,8 +17,8 @@ namespace BookJournal.Controllers
 
         public async Task<IActionResult> Create()
         {
-            ViewBag.Genres = await _bookService.GetGenresSelectListAsync();
-            return View();
+            ViewBag.AllGenres = await _bookService.GetAllGenresAsync();
+            return View(new BookCreateDTO());
         }
 
         [HttpPost]
@@ -27,11 +27,40 @@ namespace BookJournal.Controllers
         {
             if (!ModelState.IsValid)
             {
-                ViewBag.Genres = await _bookService.GetGenresSelectListAsync();
+                ViewBag.AllGenres = await _bookService.GetAllGenresAsync();
                 return View(createDto);
             }
-
             await _bookService.CreateBookAsync(createDto);
+            return RedirectToAction("Index", "Library");
+        }
+
+        public async Task<IActionResult> Edit(int id)
+        {
+            var bookDto = await _bookService.GetBookForUpdateAsync(id);
+            if (bookDto == null) return NotFound();
+            
+            ViewBag.AllGenres = await _bookService.GetAllGenresAsync();
+            return View(bookDto);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(BookUpdateDTO updateDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.AllGenres = await _bookService.GetAllGenresAsync();
+                return View(updateDto);
+            }
+            await _bookService.UpdateBookAsync(updateDto);
+            return RedirectToAction("Index", "Library");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            await _bookService.DeleteBookAsync(id);
             return RedirectToAction("Index", "Library");
         }
     }

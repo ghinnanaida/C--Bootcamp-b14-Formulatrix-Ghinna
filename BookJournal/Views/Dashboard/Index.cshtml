@@ -20,7 +20,7 @@
         <div class="list-group">
             @foreach (var book in Model.AllBooks)
             {
-                <div class="list-group-item list-group-item-action flex-column align-items-start mb-3 border rounded">
+                <a asp-controller="Progress" asp-action="Details" asp-route-id="@book.Id" class="list-group-item list-group-item-action flex-column align-items-start mb-3 border rounded"></a>
                     <div class="d-flex w-100 justify-content-between">
                         <h5 class="mb-1">@book.Title</h5>
                         <small>@book.Status.ToString()</small>
@@ -34,7 +34,6 @@
                             <i class="bi bi-pencil-square"></i> Update Progress
                         </button>
                     </div>
-                </div>
             }
         </div>
     </div>

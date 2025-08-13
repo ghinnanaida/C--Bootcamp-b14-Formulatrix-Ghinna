@@ -18,7 +18,13 @@
                 <td>@book.Author</td>
                 <td>@book.Publisher</td>
                 <td>@foreach (var genre in book.Genres){<span class="badge bg-secondary me-1">@genre</span>}</td>
-                <td><button class="btn btn-sm btn-success add-to-journal-btn" data-bs-toggle="modal" data-bs-target="#addBookToJournalModal" data-book-id="@book.Id" data-book-title="@book.Title"><i class="bi bi-journal-plus"></i> Add to my Journal</button></td>
+                <td>
+                    <a asp-controller="Book" asp-action="Edit" asp-route-id="@book.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                    <button class="btn btn-sm btn-success add-to-journal-btn" data-bs-toggle="modal" data-bs-target="#addBookToJournalModal" data-book-id="@book.Id" data-book-title="@book.Title"><i class="bi bi-journal-plus"></i> Add to my Journal</button>
+                    <form asp-controller="Book" asp-action="Delete" asp-route-id="@book.Id" method="post" class="d-inline" onsubmit="return confirm('Are you sure? This will also delete all user progress for this book.');">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                    </form>
+                </td>
             </tr>
         }
     </tbody>

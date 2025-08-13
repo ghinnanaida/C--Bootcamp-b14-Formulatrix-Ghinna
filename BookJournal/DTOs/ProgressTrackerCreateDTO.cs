@@ -15,5 +15,7 @@ namespace BookJournal.DTOs
         public ProgressUnit ProgressUnit { get; set; }
         [Required]
         public double TotalValue { get; set; }
+        public DateTime? StartDate { get; set; } 
+        public DateTime? EndDate { get; set; }   
     }
 }

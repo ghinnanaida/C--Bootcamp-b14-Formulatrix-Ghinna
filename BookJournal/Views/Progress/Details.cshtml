@@ -1,0 +1,35 @@
+@model ProgressDetailDTO
+@{
+    ViewData["Title"] = Model.Book.Title;
+}
+
+<div class="card">
+    <div class="card-header">
+        <h2>@Model.Book.Title</h2>
+        <h5 class="text-muted">by @Model.Book.Author</h5>
+    </div>
+    <div class="card-body">
+        <p><strong>Publisher:</strong> @Model.Book.Publisher</p>
+        <p><strong>Published:</strong> @Model.Book.PublishedDate?.ToShortDateString()</p>
+        <p>
+            <strong>Genres:</strong> 
+            @foreach(var genre in Model.Book.Genres) { <span class="badge bg-secondary">@genre</span> }
+        </p>
+        <hr/>
+        <h4>My Progress</h4>
+        <p><strong>Status:</strong> @Model.Tracker.Status</p>
+        <p><strong>Format:</strong> @Model.Tracker.BookType</p>
+        <p><strong>Rating:</strong> @(Model.Tracker.Rating > 0 ? Model.Tracker.Rating.ToString() : "Not Rated") / 10</p>
+        <div class="progress mt-2 mb-2" style="height: 20px;"><div class="progress-bar" role="progressbar" style="width: @Model.Tracker.ProgressPercentage.ToString("0")%;" >@Model.Tracker.ProgressPercentage.ToString("0")%</div></div>
+        <p>@Model.Tracker.CurrentValue / @Model.Tracker.TotalValue @Model.Tracker.ProgressUnit.ToString()</p>
+    </div>
+    <div class="card-footer text-muted">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#updateProgressTrackerModal">Update Progress</button>
+        <form asp-action="Delete" asp-route-id="@Model.Tracker.Id" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to remove this book from your journal?');">
+            <button type="submit" class="btn btn-danger">Delete Progress</button>
+        </form>
+        <a asp-controller="Dashboard" asp-action="Index" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+</div>
+
+@await Html.PartialAsync("_UpdateProgressTrackerModal", new ProgressTrackerUpdateDTO { Id = Model.Tracker.Id, CurrentValue = Model.Tracker.CurrentValue, Rating = Model.Tracker.Rating, Status = Model.Tracker.Status, StartDate = Model.Tracker.StartDate, EndDate = Model.Tracker.EndDate })

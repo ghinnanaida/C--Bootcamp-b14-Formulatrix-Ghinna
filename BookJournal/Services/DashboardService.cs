@@ -21,13 +21,15 @@ namespace BookJournal.Services
         {
             var userTrackers = await _progressTrackerRepository.GetTrackersForUserAsync(userId);
 
+            var validTrackers = userTrackers.Where(t => t.Book != null);
+
             var dashboardDto = new DashboardDTO
             {
-                BooksInProgress = userTrackers.Count(t => t.Status == BookStatus.InProgress),
-                BooksCompleted = userTrackers.Count(t => t.Status == BookStatus.Completed),
-                BooksOnHold = userTrackers.Count(t => t.Status == BookStatus.OnHold),
-                BooksDropped = userTrackers.Count(t => t.Status == BookStatus.Dropped),
-                AllBooks = _mapper.Map<IEnumerable<ProgressTrackerDTO>>(userTrackers)
+                BooksInProgress = validTrackers.Count(t => t.Status == BookStatus.InProgress),
+                BooksCompleted = validTrackers.Count(t => t.Status == BookStatus.Completed),
+                BooksOnHold = validTrackers.Count(t => t.Status == BookStatus.OnHold),
+                BooksDropped = validTrackers.Count(t => t.Status == BookStatus.Dropped),
+                AllBooks = _mapper.Map<IEnumerable<ProgressTrackerDTO>>(validTrackers)
             };
 
             return dashboardDto;

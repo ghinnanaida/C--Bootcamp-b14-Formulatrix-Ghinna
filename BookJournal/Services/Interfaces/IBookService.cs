@@ -5,7 +5,10 @@ namespace BookJournal.Services.Interfaces
 {
     public interface IBookService
     {
-        Task<SelectList> GetGenresSelectListAsync();
+        Task<IEnumerable<GenreDTO>> GetAllGenresAsync();
         Task CreateBookAsync(BookCreateDTO createDto);
+        Task<BookUpdateDTO?> GetBookForUpdateAsync(int id);
+        Task UpdateBookAsync(BookUpdateDTO updateDto);
+        Task DeleteBookAsync(int id);
     }
 }

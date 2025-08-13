@@ -16,6 +16,19 @@ namespace BookJournal.Controllers
             _progressService = progressService;
         }
 
+        public async Task<IActionResult> Details(int id)
+        {
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                return Unauthorized();
+            }
+            var userId = int.Parse(userIdString);
+            var detailDto = await _progressService.GetProgressDetailAsync(id, userId);
+            if (detailDto == null) return NotFound();
+            return View(detailDto);
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddToJournal(ProgressTrackerCreateDTO dto)
@@ -62,6 +75,20 @@ namespace BookJournal.Controllers
                 return NotFound();
             }
 
+            return RedirectToAction("Index", "Dashboard");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                return Unauthorized();
+            }
+            var userId = int.Parse(userIdString);
+            await _progressService.DeleteProgressAsync(id, userId);
             return RedirectToAction("Index", "Dashboard");
         }
     }

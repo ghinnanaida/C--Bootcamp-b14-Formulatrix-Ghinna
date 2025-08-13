@@ -1,17 +1,14 @@
-@model BookCreateDTO
+@model BookUpdateDTO
 @{
-    ViewData["Title"] = "Add a New Book";
+    ViewData["Title"] = "Edit Book";
     var allGenres = ViewBag.AllGenres as IEnumerable<GenreDTO> ?? new List<GenreDTO>();
 }
-}
-
 <h1>@ViewData["Title"]</h1>
-<h4>Create a new book to add to the main library.</h4>
 <hr />
 <div class="row">
     <div class="col-md-6">
-        <form asp-controller="Book" asp-action="Create" method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <form asp-controller="Book" asp-action="Edit" method="post">
+            <input type="hidden" asp-for="Id" />
             <div class="mb-3"><label asp-for="Title" class="form-label"></label><input asp-for="Title" class="form-control" /><span asp-validation-for="Title" class="text-danger"></span></div>
             <div class="mb-3"><label asp-for="Author" class="form-label"></label><input asp-for="Author" class="form-control" /><span asp-validation-for="Author" class="text-danger"></span></div>
             <div class="mb-3"><label asp-for="Publisher" class="form-label"></label><input asp-for="Publisher" class="form-control" /></div>
@@ -22,18 +19,17 @@
                     @foreach (var genre in allGenres)
                     {
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="GenreIds" value="@genre.Id" id="genre-@genre.Id" />
+                            <input class="form-check-input" type="checkbox" name="GenreIds" value="@genre.Id" id="genre-@genre.Id" 
+                                   @(Model.GenreIds.Contains(genre.Id) ? "checked" : "") />
                             <label class="form-check-label" for="genre-@genre.Id">@genre.Name</label>
                         </div>
                     }
                 </div>
-                <span asp-validation-for="GenreIds" class="text-danger"></span>
             </div>
-            <div class="form-group mt-3"><input type="submit" value="Create" class="btn btn-primary" /><a asp-action="Index" asp-controller="Library" class="btn btn-secondary ms-2">Back to Library</a></div>
+            <div class="form-group mt-3">
+                <input type="submit" value="Save" class="btn btn-primary" />
+                <a asp-action="Index" asp-controller="Library" class="btn btn-secondary">Cancel</a>
+            </div>
         </form>
     </div>
 </div>
-
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}

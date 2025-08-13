@@ -1,6 +1,6 @@
-using BookJournal.Repositories.Interfaces;
-using BookJournal.Models;
 using BookJournal.Data;
+using BookJournal.Models;
+using BookJournal.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace BookJournal.Repositories
@@ -12,6 +12,11 @@ namespace BookJournal.Repositories
         public GenreRepository(ApplicationDbContext context)
         {
             _context = context;
+        }
+
+        public async Task AddAsync(Genre entity)
+        {
+            await _context.Genres.AddAsync(entity);
         }
 
         public async Task<IEnumerable<Genre>> GetAllAsync()
@@ -27,6 +32,11 @@ namespace BookJournal.Repositories
         public async Task<ICollection<Genre>> GetGenresByIdsAsync(IEnumerable<int> ids)
         {
             return await _context.Genres.Where(g => ids.Contains(g.Id)).ToListAsync();
+        }
+
+        public void Remove(Genre entity)
+        {
+            _context.Genres.Remove(entity);
         }
     }
 }

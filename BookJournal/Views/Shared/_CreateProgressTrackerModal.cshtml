@@ -11,6 +11,16 @@
                     <div class="mb-3"><label asp-for="BookType" class="form-label"></label><select asp-for="BookType" asp-items="Html.GetEnumSelectList<BookType>()" class="form-control"></select></div>
                     <div class="mb-3"><label asp-for="ProgressUnit" class="form-label"></label><select asp-for="ProgressUnit" asp-items="Html.GetEnumSelectList<ProgressUnit>()" class="form-control"></select></div>
                     <div class="mb-3"><label asp-for="TotalValue" class="form-label">Total (Pages, Episodes, %)</label><input asp-for="TotalValue" type="number" class="form-control" /></div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="StartDate" class="form-label"></label>
+                            <input asp-for="StartDate" type="date" class="form-control" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="EndDate" class="form-label"></label>
+                            <input asp-for="EndDate" type="date" class="form-control" />
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button><button type="submit" class="btn btn-primary">Add to Journal</button></div>
             </form>

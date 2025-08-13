@@ -9,6 +9,8 @@ namespace BookJournal.DTOs
         public string Author { get; set; } = string.Empty;
         public List<string> Genres { get; set; } = new List<string>();
         public BookStatus Status { get; set; }
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
         public BookType BookType { get; set; }
         public double Rating { get; set; }
         public double CurrentValue { get; set; }

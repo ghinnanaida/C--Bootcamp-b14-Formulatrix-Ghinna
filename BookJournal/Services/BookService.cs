@@ -1,10 +1,10 @@
 using AutoMapper;
 using BookJournal.Data;
-using BookJournal.Repositories.Interfaces;
 using BookJournal.DTOs;
 using BookJournal.Models;
+using BookJournal.Repositories.Interfaces;
 using BookJournal.Services.Interfaces;
-using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 
 namespace BookJournal.Services
 {
@@ -23,22 +23,46 @@ namespace BookJournal.Services
             _mapper = mapper;
         }
 
+        public async Task<IEnumerable<GenreDTO>> GetAllGenresAsync()
+        {
+            var genres = await _genreRepository.GetAllAsync();
+            return _mapper.Map<IEnumerable<GenreDTO>>(genres);
+        }
+
         public async Task CreateBookAsync(BookCreateDTO createDto)
         {
             var book = _mapper.Map<Book>(createDto);
-
-            if (createDto.GenreIds.Any())
-            {
-                book.Genres = await _genreRepository.GetGenresByIdsAsync(createDto.GenreIds);
-            }
-
+            book.Genres = await _genreRepository.GetGenresByIdsAsync(createDto.GenreIds);
             await _bookRepository.AddAsync(book);
-            await _context.SaveChangesAsync(); 
+            await _context.SaveChangesAsync();
         }
 
-        public async Task<SelectList> GetGenresSelectListAsync()
+        public async Task<BookUpdateDTO?> GetBookForUpdateAsync(int id)
         {
-            return new SelectList(await _genreRepository.GetAllAsync(), "Id", "Name");
+            var book = await _bookRepository.GetByIdAsync(id);
+            return book == null ? null : _mapper.Map<BookUpdateDTO>(book);
+        }
+
+        public async Task UpdateBookAsync(BookUpdateDTO updateDto)
+        {
+            var book = await _context.Books.Include(b => b.Genres).SingleOrDefaultAsync(b => b.Id == updateDto.Id);
+            if (book == null) return;
+
+            _mapper.Map(updateDto, book);
+            var updatedGenres = await _genreRepository.GetGenresByIdsAsync(updateDto.GenreIds);
+            book.Genres = updatedGenres;
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteBookAsync(int id)
+        {
+            var book = await _bookRepository.GetByIdAsync(id);
+            if (book != null)
+            {
+                _bookRepository.Remove(book);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }
