@@ -7,5 +7,8 @@ namespace BookJournal.DTOs
         public int BooksOnHold { get; set; }
         public int BooksDropped { get; set; }
         public IEnumerable<ProgressTrackerDTO> AllBooks { get; set; } = new List<ProgressTrackerDTO>();
+        public int BooksCompletedLastWeek { get; set; }
+        public double PagesReadLastWeek { get; set; }
+        public Dictionary<string, int> GenreChartData { get; set; } = new Dictionary<string, int>();
     }
 }

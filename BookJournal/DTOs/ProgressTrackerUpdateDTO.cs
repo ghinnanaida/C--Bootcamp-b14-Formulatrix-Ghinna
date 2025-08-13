@@ -7,13 +7,21 @@ namespace BookJournal.DTOs
     {
         [Required]
         public int Id { get; set; }
-        [Required]
+
+        [Display(Name = "Current Progress")]
         public double CurrentValue { get; set; }
-        [Required]
+
+        [Display(Name = "Reading Status")]
         public BookStatus Status { get; set; }
+
+        [Display(Name = "Your Rating (0-10)")]
         [Range(0, 10)]
         public double Rating { get; set; }
+
+        [Display(Name = "Start Date")]
         public DateTime? StartDate { get; set; }
-        public DateTime? EndDate { get; set; } 
+
+        [Display(Name = "End Date")]
+        public DateTime? EndDate { get; set; }
     }
 }

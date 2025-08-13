@@ -6,20 +6,18 @@
             <div class="modal-header"><h5 class="modal-title" id="addBookModalLabel">Add Book to Journal</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
             <form id="addBookForm" asp-controller="Progress" asp-action="AddToJournal" method="post">
                 <div class="modal-body">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                     <input type="hidden" asp-for="BookId" />
+                    
                     <div class="mb-3"><label asp-for="Status" class="form-label"></label><select asp-for="Status" asp-items="Html.GetEnumSelectList<BookStatus>()" class="form-control"></select></div>
                     <div class="mb-3"><label asp-for="BookType" class="form-label"></label><select asp-for="BookType" asp-items="Html.GetEnumSelectList<BookType>()" class="form-control"></select></div>
                     <div class="mb-3"><label asp-for="ProgressUnit" class="form-label"></label><select asp-for="ProgressUnit" asp-items="Html.GetEnumSelectList<ProgressUnit>()" class="form-control"></select></div>
-                    <div class="mb-3"><label asp-for="TotalValue" class="form-label">Total (Pages, Episodes, %)</label><input asp-for="TotalValue" type="number" class="form-control" /></div>
+                    <div class="mb-3"><label asp-for="TotalValue" class="form-label"></label><input asp-for="TotalValue" type="number" class="form-control" /><span asp-validation-for="TotalValue" class="text-danger"></span></div>
+                    <div class="mb-3"><label asp-for="Rating" class="form-label"></label><input asp-for="Rating" type="number" step="0.5" class="form-control" /><span asp-validation-for="Rating" class="text-danger"></span></div>
+
                     <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label asp-for="StartDate" class="form-label"></label>
-                            <input asp-for="StartDate" type="date" class="form-control" />
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label asp-for="EndDate" class="form-label"></label>
-                            <input asp-for="EndDate" type="date" class="form-control" />
-                        </div>
+                        <div class="col-md-6 mb-3"><label asp-for="StartDate" class="form-label"></label><input asp-for="StartDate" type="date" class="form-control" /></div>
+                        <div class="col-md-6 mb-3"><label asp-for="EndDate" class="form-label"></label><input asp-for="EndDate" type="date" class="form-control" /></div>
                     </div>
                 </div>
                 <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button><button type="submit" class="btn btn-primary">Add to Journal</button></div>

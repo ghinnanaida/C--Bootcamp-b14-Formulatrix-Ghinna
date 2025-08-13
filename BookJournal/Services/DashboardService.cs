@@ -1,7 +1,7 @@
 using AutoMapper;
-using BookJournal.Repositories.Interfaces;
 using BookJournal.DTOs;
 using BookJournal.Enumerations;
+using BookJournal.Repositories.Interfaces;
 using BookJournal.Services.Interfaces;
 
 namespace BookJournal.Services
@@ -20,8 +20,20 @@ namespace BookJournal.Services
         public async Task<DashboardDTO> GetDashboardDataAsync(int userId)
         {
             var userTrackers = await _progressTrackerRepository.GetTrackersForUserAsync(userId);
+            var validTrackers = userTrackers.Where(t => t.Book != null && !string.IsNullOrEmpty(t.Book.Title));
+            var sevenDaysAgo = DateTime.UtcNow.AddDays(-7);
 
-            var validTrackers = userTrackers.Where(t => t.Book != null);
+            var completedLastWeek = validTrackers
+                .Where(t => t.Status == BookStatus.Completed && t.EndDate >= sevenDaysAgo);
+
+            var pagesReadLastWeek = validTrackers
+                .Where(t => t.ProgressUnit == ProgressUnit.Pages && t.LastStatusChangeDate >= sevenDaysAgo)
+                .Sum(t => t.CurrentValue); 
+
+            var genreChartData = validTrackers
+                .SelectMany(t => t.Book.Genres)
+                .GroupBy(g => g.Name)
+                .ToDictionary(g => g.Key, g => g.Count());
 
             var dashboardDto = new DashboardDTO
             {
@@ -29,7 +41,10 @@ namespace BookJournal.Services
                 BooksCompleted = validTrackers.Count(t => t.Status == BookStatus.Completed),
                 BooksOnHold = validTrackers.Count(t => t.Status == BookStatus.OnHold),
                 BooksDropped = validTrackers.Count(t => t.Status == BookStatus.Dropped),
-                AllBooks = _mapper.Map<IEnumerable<ProgressTrackerDTO>>(validTrackers)
+                AllBooks = _mapper.Map<IEnumerable<ProgressTrackerDTO>>(validTrackers),
+                BooksCompletedLastWeek = completedLastWeek.Count(),
+                PagesReadLastWeek = pagesReadLastWeek,
+                GenreChartData = genreChartData
             };
 
             return dashboardDto;

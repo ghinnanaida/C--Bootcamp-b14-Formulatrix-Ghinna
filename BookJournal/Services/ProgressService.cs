@@ -4,6 +4,7 @@ using BookJournal.DTOs;
 using BookJournal.Models;
 using BookJournal.Repositories.Interfaces;
 using BookJournal.Services.Interfaces;
+using BookJournal.Enumerations;
 using Microsoft.EntityFrameworkCore;
 
 namespace BookJournal.Services
@@ -39,19 +40,26 @@ namespace BookJournal.Services
             return true;
         }
 
-        public async Task<bool> UpdateProgressAsync(ProgressTrackerUpdateDTO dto, int userId)
+       public async Task<bool> UpdateProgressAsync(ProgressTrackerUpdateDTO dto, int userId)
         {
             var tracker = await _context.ProgressTrackers.FirstOrDefaultAsync(t => t.Id == dto.Id && t.UserId == userId);
             if (tracker == null) return false;
 
             _mapper.Map(dto, tracker);
-            if (dto.Status == Enumerations.BookStatus.Completed && tracker.EndDate == null)
+
+            if (tracker.CurrentValue >= tracker.TotalValue)
             {
-                tracker.EndDate = DateTime.UtcNow;
+                tracker.Status = BookStatus.Completed;
+                if (tracker.EndDate == null)
+                {
+                    tracker.EndDate = DateTime.UtcNow;
+                }
             }
+
             await _context.SaveChangesAsync();
             return true;
         }
+
 
         public async Task<ProgressDetailDTO?> GetProgressDetailAsync(int progressId, int userId)
         {
