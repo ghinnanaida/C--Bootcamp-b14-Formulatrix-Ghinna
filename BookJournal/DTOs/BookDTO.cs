@@ -6,17 +6,13 @@ namespace BookJournal.DTOs
     {
         
         public int Id { get; set; }
-
         [Required]
         public string Title { get; set; } = string.Empty;
-
         [Required]
         public string Author { get; set; } = string.Empty;
-
-        public string? Genre { get; set; }
-
-        public DateTime? PublicationDate { get; set; }
-
+        public List<string> Genres { get; set; } = new List<string>();
+        public string? Publisher { get; set; }
+        public DateTime? PublishedDate { get; set; }
         public string? Summary { get; set; }
     }
 }

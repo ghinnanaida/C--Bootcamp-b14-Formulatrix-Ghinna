@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace BookJournal.Migrations
 {
     /// <inheritdoc />
@@ -244,6 +246,41 @@ namespace BookJournal.Migrations
                         principalTable: "Genres",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.InsertData(
+                table: "Books",
+                columns: new[] { "Id", "Author", "PublishedDate", "Publisher", "Title" },
+                values: new object[,]
+                {
+                    { 1, "Brandon Sanderson", new DateTime(2010, 8, 31, 0, 0, 0, 0, DateTimeKind.Unspecified), "Tor Books", "The Way of Kings" },
+                    { 2, "Frank Herbert", new DateTime(1965, 8, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Chilton Books", "Dune" },
+                    { 3, "Agatha Christie", new DateTime(1939, 11, 6, 0, 0, 0, 0, DateTimeKind.Unspecified), "Collins Crime Club", "And Then There Were None" },
+                    { 4, "Jane Austen", new DateTime(1813, 1, 28, 0, 0, 0, 0, DateTimeKind.Unspecified), "T. Egerton, Whitehall", "Pride and Prejudice" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Genres",
+                columns: new[] { "Id", "Name" },
+                values: new object[,]
+                {
+                    { 1, "Fantasy" },
+                    { 2, "Science Fiction" },
+                    { 3, "Mystery" },
+                    { 4, "Romance" },
+                    { 5, "Thriller" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "BookGenres",
+                columns: new[] { "BookId", "GenreId" },
+                values: new object[,]
+                {
+                    { 1, 1 },
+                    { 2, 2 },
+                    { 3, 3 },
+                    { 3, 5 },
+                    { 4, 4 }
                 });
 
             migrationBuilder.CreateIndex(

@@ -1,0 +1,59 @@
+@model DashboardDTO
+@{
+    ViewData["Title"] = "My Dashboard";
+}
+
+<div class="text-center mb-4">
+    <h1 class="display-4">@ViewData["Title"]</h1>
+</div>
+
+<div class="row text-center mb-4">
+    <div class="col-md-3"><div class="card text-white bg-primary"><div class="card-body"><h5 class="card-title">In Progress</h5><p class="card-text fs-3">@Model.BooksInProgress</p></div></div></div>
+    <div class="col-md-3"><div class="card text-white bg-success"><div class="card-body"><h5 class="card-title">Completed</h5><p class="card-text fs-3">@Model.BooksCompleted</p></div></div></div>
+    <div class="col-md-3"><div class="card text-white bg-warning"><div class="card-body"><h5 class="card-title">On Hold</h5><p class="card-text fs-3">@Model.BooksOnHold</p></div></div></div>
+    <div class="col-md-3"><div class="card text-white bg-danger"><div class="card-body"><h5 class="card-title">Dropped</h5><p class="card-text fs-3">@Model.BooksDropped</p></div></div></div>
+</div>
+
+<div class="card">
+    <div class="card-header"><h3>My Bookshelf</h3></div>
+    <div class="card-body">
+        <div class="list-group">
+            @foreach (var book in Model.AllBooks)
+            {
+                <div class="list-group-item list-group-item-action flex-column align-items-start mb-3 border rounded">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">@book.Title</h5>
+                        <small>@book.Status.ToString()</small>
+                    </div>
+                    <p class="mb-1">by @book.Author</p>
+                    <div class="progress mt-2 mb-2" style="height: 20px;"><div class="progress-bar" role="progressbar" style="width: @book.ProgressPercentage.ToString("0")%;" aria-valuenow="@book.ProgressPercentage" aria-valuemin="0" aria-valuemax="100">@book.ProgressPercentage.ToString("0")%</div></div>
+                    <small>@book.CurrentValue / @book.TotalValue @book.ProgressUnit.ToString()</small>
+                    <div class="mt-2">
+                        <button class="btn btn-sm btn-outline-primary update-progress-btn" data-bs-toggle="modal" data-bs-target="#updateProgressModal"
+                                data-tracker-id="@book.Id" data-current-value="@book.CurrentValue" data-total-value="@book.TotalValue" data-status="@book.Status" data-rating="@book.Rating">
+                            <i class="bi bi-pencil-square"></i> Update Progress
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@await Html.PartialAsync("_UpdateProgressTrackerModal", new ProgressTrackerUpdateDTO())
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('.update-progress-btn').click(function () {
+                var button = $(this);
+                var modal = $('#updateProgressModal');
+                modal.find('#updateProgressForm #Id').val(button.data('tracker-id'));
+                modal.find('#updateProgressForm #CurrentValue').val(button.data('current-value'));
+                modal.find('#updateProgressForm #Status').val(button.data('status'));
+                modal.find('#updateProgressForm #Rating').val(button.data('rating'));
+                modal.find('#progressLabel').text('/ ' + button.data('total-value'));
+            });
+        });
+    </script>
+}

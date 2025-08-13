@@ -1,3 +1,4 @@
+using BookJournal.Enumerations;
 using System.ComponentModel.DataAnnotations;
 
 namespace BookJournal.DTOs
@@ -6,11 +7,13 @@ namespace BookJournal.DTOs
     {
         [Required]
         public int BookId { get; set; }
-
-        [Range(0, int.MaxValue, ErrorMessage = "Current page must be a non-negative integer.")]
-        public int CurrentPage { get; set; } = 0;
-
-        [Range(1, int.MaxValue, ErrorMessage = "Total pages must be a positive integer.")]
-        public int TotalPages { get; set; } = 1;
+        [Required]
+        public BookStatus Status { get; set; }
+        [Required]
+        public BookType BookType { get; set; }
+        [Required]
+        public ProgressUnit ProgressUnit { get; set; }
+        [Required]
+        public double TotalValue { get; set; }
     }
 }

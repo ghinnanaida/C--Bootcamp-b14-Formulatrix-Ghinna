@@ -1,46 +1,32 @@
-using Microsoft.EntityFrameworkCore;
+using BookJournal.Repositories.Interfaces;
 using BookJournal.Models;
 using BookJournal.Data;
+using Microsoft.EntityFrameworkCore;
 
-namespace BookJournal.Repositories;
-public class GenreRepository : IGenreRepository
+namespace BookJournal.Repositories
 {
-    private readonly ApplicationDbContext _context;
-
-    public GenreRepository(ApplicationDbContext context)
+    public class GenreRepository : IGenreRepository
     {
-        _context = context;
-    }
+        private readonly ApplicationDbContext _context;
 
-    public async Task<IEnumerable<Genre>> GetAllGenresAsync()
-    {
-        return await _context.Genres.ToListAsync();
-    }
-
-    public async Task<Genre?> GetGenreByIdAsync(int id)
-    {
-        return await _context.Genres.FindAsync(id);
-    }
-
-    public async Task AddGenreAsync(Genre genre)
-    {
-        _context.Genres.Add(genre);
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task UpdateGenreAsync(Genre genre)
-    {
-        _context.Genres.Update(genre);
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task DeleteGenreAsync(int id)
-    {
-        var genre = await GetGenreByIdAsync(id);
-        if (genre != null)
+        public GenreRepository(ApplicationDbContext context)
         {
-            _context.Genres.Remove(genre);
-            await _context.SaveChangesAsync();
+            _context = context;
+        }
+
+        public async Task<IEnumerable<Genre>> GetAllAsync()
+        {
+            return await _context.Genres.OrderBy(g => g.Name).ToListAsync();
+        }
+
+        public async Task<Genre?> GetByIdAsync(int id)
+        {
+            return await _context.Genres.FindAsync(id);
+        }
+
+        public async Task<ICollection<Genre>> GetGenresByIdsAsync(IEnumerable<int> ids)
+        {
+            return await _context.Genres.Where(g => ids.Contains(g.Id)).ToListAsync();
         }
     }
 }

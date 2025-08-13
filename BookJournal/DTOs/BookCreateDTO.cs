@@ -5,14 +5,11 @@ namespace BookJournal.DTOs
     public class BookCreateDTO
     {
         [Required]
-        [StringLength(100, ErrorMessage = "Title cannot be longer than 100 characters.")]
-        public required string Title { get; set; }
-
+        public string Title { get; set; } = string.Empty;
         [Required]
-        [StringLength(50, ErrorMessage = "Author cannot be longer than 50 characters.")]
-        public required string Author { get; set; }
-
-        [Range(0, int.MaxValue, ErrorMessage = "Page count must be a non-negative number.")]
-        public int PageCount { get; set; }
+        public string Author { get; set; } = string.Empty;
+        public string? Publisher { get; set; }
+        public DateTime? PublishedDate { get; set; }
+        public List<int> GenreIds { get; set; } = new List<int>();
     }
 }

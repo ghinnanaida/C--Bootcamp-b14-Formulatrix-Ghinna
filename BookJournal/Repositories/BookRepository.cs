@@ -1,46 +1,43 @@
-using Microsoft.EntityFrameworkCore;
+using BookJournal.Repositories.Interfaces;
 using BookJournal.Models;
 using BookJournal.Data;
+using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
-namespace BookJournal.Repositories;
-public class BookRepository : IBookRepository  
+namespace BookJournal.Repositories
 {
-    private readonly ApplicationDbContext _context;
-
-    public BookRepository(ApplicationDbContext context)
+    public class BookRepository : IBookRepository
     {
-        _context = context;
-    }
+        private readonly ApplicationDbContext _context;
 
-    public async Task<IEnumerable<Book>> GetAllBooksAsync()
-    {
-        return await _context.Books.ToListAsync();
-    }
-
-    public async Task<Book?> GetBookByIdAsync(int id)
-    {
-        return await _context.Books.FindAsync(id);
-    }
-
-    public async Task AddBookAsync(Book book)
-    {
-        _context.Books.Add(book);
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task UpdateBookAsync(Book book)
-    {
-        _context.Books.Update(book);
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task DeleteBookAsync(int id)
-    {
-        var book = await GetBookByIdAsync(id);
-        if (book != null)
+        public BookRepository(ApplicationDbContext context)
         {
-            _context.Books.Remove(book);
-            await _context.SaveChangesAsync();
+            _context = context;
+        }
+
+        public async Task AddAsync(Book entity)
+        {
+            await _context.Books.AddAsync(entity);
+        }
+
+        public async Task<IEnumerable<Book>> FindAsync(Expression<Func<Book, bool>> predicate)
+        {
+            return await _context.Books.Where(predicate).ToListAsync();
+        }
+
+        public async Task<IEnumerable<Book>> GetAllAsync()
+        {
+            return await _context.Books.Include(b => b.Genres).OrderBy(b => b.Title).ToListAsync();
+        }
+
+        public async Task<Book?> GetByIdAsync(int id)
+        {
+            return await _context.Books.Include(b => b.Genres).FirstOrDefaultAsync(b => b.Id == id);
+        }
+
+        public void Remove(Book entity)
+        {
+            _context.Books.Remove(entity);
         }
     }
 }

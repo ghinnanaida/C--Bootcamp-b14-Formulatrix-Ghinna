@@ -10,9 +10,9 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace BookJournal.Migrations
 {
-    [DbContext(typeof(BookJournalDbContext))]
-    [Migration("20250813072205_AddSeedDataBookAndGenre")]
-    partial class AddSeedDataBookAndGenre
+    [DbContext(typeof(ApplicationDbContext))]
+    [Migration("20250813163256_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
