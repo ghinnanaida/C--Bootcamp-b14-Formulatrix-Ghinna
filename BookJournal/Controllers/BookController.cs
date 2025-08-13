@@ -6,11 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 namespace BookJournal.Controllers
 {
     [Authorize]
-    public class BookControllers : Controller
+    public class BookController : Controller
     {
         private readonly IBookService _bookService;
 
-        public BookControllers(IBookService bookService)
+        public BookController(IBookService bookService)
         {
             _bookService = bookService;
         }

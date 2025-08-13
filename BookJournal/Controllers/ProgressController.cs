@@ -24,8 +24,12 @@ namespace BookJournal.Controllers
             {
                 return BadRequest(ModelState);
             }
-
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                return Unauthorized();
+            }
+            var userId = int.Parse(userIdString);
             var success = await _progressService.AddToJournalAsync(dto, userId);
 
             if (!success)
@@ -45,7 +49,12 @@ namespace BookJournal.Controllers
                 return BadRequest(ModelState);
             }
 
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                return Unauthorized();
+            }
+            var userId = int.Parse(userIdString);
             var success = await _progressService.UpdateProgressAsync(dto, userId);
 
             if (!success)

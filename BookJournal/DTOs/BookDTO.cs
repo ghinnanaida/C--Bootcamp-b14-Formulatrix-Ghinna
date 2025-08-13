@@ -13,6 +13,5 @@ namespace BookJournal.DTOs
         public List<string> Genres { get; set; } = new List<string>();
         public string? Publisher { get; set; }
         public DateTime? PublishedDate { get; set; }
-        public string? Summary { get; set; }
     }
 }

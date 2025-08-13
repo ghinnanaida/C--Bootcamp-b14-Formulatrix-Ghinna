@@ -8,15 +8,18 @@ namespace BookJournal.Mappers
     {
         public MappingProfile()
         {
+            CreateMap<Book, BookDTO>()
+                .ForMember(dest => dest.Genres, opt => opt.MapFrom(src => src.Genres.Select(g => g.Name).ToList()));
+                
+            CreateMap<BookCreateDTO, Book>()
+                .ForMember(dest => dest.Genres, opt => opt.Ignore());
+
             CreateMap<ProgressTracker, ProgressTrackerDTO>()
                 .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Book.Title))
                 .ForMember(dest => dest.Author, opt => opt.MapFrom(src => src.Book.Author))
                 .ForMember(dest => dest.Genres, opt => opt.MapFrom(src => src.Book.Genres.Select(g => g.Name).ToList()))
                 .ForMember(dest => dest.ProgressPercentage, opt => opt.MapFrom(src =>
                     src.TotalValue > 0 ? (src.CurrentValue / src.TotalValue) * 100 : 0));
-
-            CreateMap<BookCreateDTO, Book>()
-                .ForMember(dest => dest.Genres, opt => opt.Ignore());
 
             CreateMap<ProgressTrackerCreateDTO, ProgressTracker>()
                 .ForMember(dest => dest.LastStatusChangeDate, opt => opt.MapFrom(src => DateTime.UtcNow))

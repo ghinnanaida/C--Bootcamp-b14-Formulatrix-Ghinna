@@ -17,7 +17,13 @@ namespace BookJournal.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                return Unauthorized();
+            }
+
+            var userId = int.Parse(userIdString);
             var dashboardDto = await _dashboardService.GetDashboardDataAsync(userId);
             return View(dashboardDto);
         }

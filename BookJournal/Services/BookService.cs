@@ -33,7 +33,7 @@ namespace BookJournal.Services
             }
 
             await _bookRepository.AddAsync(book);
-            await _context.SaveChangesAsync(); // Save changes here
+            await _context.SaveChangesAsync(); 
         }
 
         public async Task<SelectList> GetGenresSelectListAsync()
