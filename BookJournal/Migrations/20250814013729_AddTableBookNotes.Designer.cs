@@ -3,6 +3,7 @@ using System;
 using BookJournal.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BookJournal.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250814013729_AddTableBookNotes")]
+    partial class AddTableBookNotes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.8");
@@ -30,33 +33,6 @@ namespace BookJournal.Migrations
                     b.HasIndex("GenreId");
 
                     b.ToTable("BookGenres", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            BookId = 1,
-                            GenreId = 1
-                        },
-                        new
-                        {
-                            BookId = 2,
-                            GenreId = 2
-                        },
-                        new
-                        {
-                            BookId = 3,
-                            GenreId = 3
-                        },
-                        new
-                        {
-                            BookId = 3,
-                            GenreId = 5
-                        },
-                        new
-                        {
-                            BookId = 4,
-                            GenreId = 4
-                        });
                 });
 
             modelBuilder.Entity("BookJournal.Models.Book", b =>
@@ -85,40 +61,6 @@ namespace BookJournal.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Books", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Author = "Brandon Sanderson",
-                            PublishedDate = new DateTime(2010, 8, 31, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Publisher = "Tor Books",
-                            Title = "The Way of Kings"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Author = "Frank Herbert",
-                            PublishedDate = new DateTime(1965, 8, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Publisher = "Chilton Books",
-                            Title = "Dune"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Author = "Agatha Christie",
-                            PublishedDate = new DateTime(1939, 11, 6, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Publisher = "Collins Crime Club",
-                            Title = "And Then There Were None"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Author = "Jane Austen",
-                            PublishedDate = new DateTime(1813, 1, 28, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Publisher = "T. Egerton, Whitehall",
-                            Title = "Pride and Prejudice"
-                        });
                 });
 
             modelBuilder.Entity("BookJournal.Models.BookNotes", b =>
@@ -159,33 +101,6 @@ namespace BookJournal.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Genres", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Name = "Fantasy"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = "Science Fiction"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Name = "Mystery"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Name = "Romance"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Name = "Thriller"
-                        });
                 });
 
             modelBuilder.Entity("BookJournal.Models.ProgressTracker", b =>

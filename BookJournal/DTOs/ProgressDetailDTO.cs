@@ -4,5 +4,6 @@ namespace BookJournal.DTOs
     {
         public ProgressTrackerDTO Tracker { get; set; } = new();
         public BookDTO Book { get; set; } = new();
+        public List<BookNoteDTO> Notes { get; set; } = new List<BookNoteDTO>();
     }
 }

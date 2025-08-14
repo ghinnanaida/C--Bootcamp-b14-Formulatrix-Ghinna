@@ -9,5 +9,7 @@ namespace BookJournal.Services.Interfaces
         Task<ProgressDetailDTO?> GetProgressDetailAsync(int progressId, int userId);
         Task<ProgressTrackerUpdateDTO?> GetProgressForUpdateAsync(int progressId, int userId);
         Task DeleteProgressAsync(int progressId, int userId);
+        Task<BookNoteDTO> AddNoteAsync(BookNoteCreateDTO dto, int userId);
+        Task<bool> DeleteNoteAsync(int noteId, int userId);
     }
 }

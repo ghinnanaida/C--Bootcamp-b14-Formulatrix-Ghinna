@@ -15,6 +15,7 @@ namespace BookJournal.Data
 
         public DbSet<Book> Books { get; set; }
         public DbSet<Genre> Genres { get; set; }
+        public DbSet<BookNotes> BookNotes { get; set; }
         public DbSet<ProgressTracker> ProgressTrackers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -50,6 +51,19 @@ namespace BookJournal.Data
                         j.HasKey("BookId", "GenreId");
                         j.ToTable("BookGenres");
                     });
+            
+            modelBuilder.Entity<BookNotes>(entity =>
+            {     
+                entity.ToTable("BookNotes");
+                entity.HasKey(bn => bn.Id);
+                entity.Property(bn => bn.Note).IsRequired().HasMaxLength(1000);
+                entity.Property(bn => bn.CreatedAt).IsRequired().HasColumnType("datetime");
+                entity.HasOne(bn => bn.ProgressTracker)
+                      .WithMany(pt => pt.BookNotes)
+                      .HasForeignKey(bn => bn.ProgressTrackerId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
             modelBuilder.Entity<ProgressTracker>(entity =>
             {
                 entity.ToTable("ProgressTrackers");

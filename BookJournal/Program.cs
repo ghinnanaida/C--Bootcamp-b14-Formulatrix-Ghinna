@@ -34,6 +34,7 @@ builder.Services.AddValidatorsFromAssemblyContaining<BookCreateValidator>();
 
 builder.Services.AddScoped<IBookRepository, BookRepository>();
 builder.Services.AddScoped<IGenreRepository, GenreRepository>();
+builder.Services.AddScoped<IBookNoteRepository, BookNoteRepository>();
 builder.Services.AddScoped<IProgressTrackerRepository, ProgressTrackerRepository>();
 
 builder.Services.AddScoped<IBookService, BookService>();

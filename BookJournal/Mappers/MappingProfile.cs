@@ -20,12 +20,12 @@ namespace BookJournal.Mappers
             CreateMap<Genre, GenreDTO>();
             CreateMap<GenreCreateDTO, Genre>();
 
-             CreateMap<ProgressTracker, ProgressTrackerDTO>()
-                .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Book.Title))
-                .ForMember(dest => dest.Author, opt => opt.MapFrom(src => src.Book.Author))
-                .ForMember(dest => dest.Genres, opt => opt.MapFrom(src => src.Book.Genres.Select(g => g.Name).ToList()))
-                .ForMember(dest => dest.ProgressPercentage, opt => opt.MapFrom(src =>
-                    src.TotalValue > 0 ? (src.CurrentValue / src.TotalValue) * 100 : 0));
+            CreateMap<ProgressTracker, ProgressTrackerDTO>()
+               .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Book.Title))
+               .ForMember(dest => dest.Author, opt => opt.MapFrom(src => src.Book.Author))
+               .ForMember(dest => dest.Genres, opt => opt.MapFrom(src => src.Book.Genres.Select(g => g.Name).ToList()))
+               .ForMember(dest => dest.ProgressPercentage, opt => opt.MapFrom(src =>
+                   src.TotalValue > 0 ? (src.CurrentValue / src.TotalValue) * 100 : 0));
 
             CreateMap<ProgressTrackerCreateDTO, ProgressTracker>()
                 .ForMember(dest => dest.LastStatusChangeDate, opt => opt.MapFrom(src => DateTime.UtcNow));
@@ -34,8 +34,11 @@ namespace BookJournal.Mappers
                 .ForMember(dest => dest.LastStatusChangeDate, opt => opt.MapFrom(src => DateTime.UtcNow))
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
-                
+
             CreateMap<ProgressTracker, ProgressTrackerUpdateDTO>();
+            
+            CreateMap<BookNotes, BookNoteDTO>();
+            CreateMap<BookNoteCreateDTO, BookNotes>();
         }
     }
 }

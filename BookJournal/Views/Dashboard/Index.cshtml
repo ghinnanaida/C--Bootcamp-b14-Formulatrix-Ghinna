@@ -1,4 +1,5 @@
-@model DashboardDTO
+@using BookJournal.DTOs
+@model DashboardDTO 
 @{
     ViewData["Title"] = "My Dashboard";
 }
@@ -14,10 +15,18 @@
     <div class="col-md-3"><div class="card text-white bg-danger"><div class="card-body"><h5 class="card-title">Dropped</h5><p class="card-text fs-3">@Model.BooksDropped</p></div></div></div>
 </div>
 <div class="row mb-4">
-    <div class="col-md-8">
+    <div class="col-md-4">
         <div class="card">
             <div class="card-body">
-                <div style="position: relative; height: 40vh; width: 100%;">
+                <h5 class="card-title">Monthly Completions (Last 6 Months)</h5>
+                <canvas id="monthlyChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <div style="position: relative; height: 50vh; width: 100%;">
                     <h5 class="card-title">Genre Distribution</h5>
                     <canvas id="genreChart"></canvas>
                 </div>
@@ -46,19 +55,36 @@
 <div class="card">
     <div class="card-header"><h3>My Bookshelf</h3></div>
     <div class="card-body">
-        <div class="list-group">
-            @foreach (var book in Model.AllBooks)
-            {
-                <a asp-controller="Progress" asp-action="Details" asp-route-id="@book.Id" class="list-group-item list-group-item-action flex-column align-items-start mb-3 border rounded">
-                    <div class="d-flex w-100 justify-content-between">
-                        <h5 class="mb-1">@book.Title</h5>
-                        <small>@book.Status.ToString()</small>
-                    </div>
-                    <p class="mb-1">by @book.Author</p>
-                    <div class="progress mt-2 mb-2" style="height: 20px;"><div class="progress-bar" role="progressbar" style="width: @book.ProgressPercentage.ToString("0")%;" >@book.ProgressPercentage.ToString("0")%</div></div>
-                    <small>@book.CurrentValue / @book.TotalValue @book.ProgressUnit.ToString()</small>
-                </a>
-            }
+        <ul class="nav nav-tabs" id="bookshelfTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="inprogress-tab" data-bs-toggle="tab" data-bs-target="#inprogress-pane" type="button" role="tab">On Read</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tbr-tab" data-bs-toggle="tab" data-bs-target="#tbr-pane" type="button" role="tab">To Be Read</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed-pane" type="button" role="tab">Completed</button>
+            </li>
+        </ul>
+        <div class="tab-content" id="bookshelfTabsContent">
+            <div class="tab-pane fade show active" id="inprogress-pane" role="tabpanel">
+                <div class="list-group py-3">
+                    @foreach (var book in Model.InProgressBooks) { <partial name="_BookshelfItem" model="book" /> }
+                </div>
+            </div>
+            <div class="tab-pane fade" id="tbr-pane" role="tabpanel">
+                <div class="p-3">
+                    <a asp-controller="Library" asp-action="Index" class="btn btn-primary mb-3"><i class="bi bi-plus-circle"></i> Tambah Buku dari Library</a>
+                </div>
+                <div class="list-group py-3">
+                    @foreach (var book in Model.TbrBooks) { <partial name="_BookshelfItem" model="book" /> }
+                </div>
+            </div>
+            <div class="tab-pane fade" id="completed-pane" role="tabpanel">
+                <div class="list-group py-3">
+                    @foreach (var book in Model.CompletedBooks) { <partial name="_BookshelfItem" model="book" /> }
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -98,6 +124,21 @@
                     }
                 }
             }
+        });
+
+        const monthlyCtx = document.getElementById('monthlyChart');
+        const monthlyData = @Html.Raw(Json.Serialize(Model.MonthlyCompletionChartData));
+        new Chart(monthlyCtx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(monthlyData),
+                datasets: [{
+                    label: 'Books Completed',
+                    data: Object.values(monthlyData),
+                    backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                }]
+            },
+            options: { scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
         });
     </script>
 }

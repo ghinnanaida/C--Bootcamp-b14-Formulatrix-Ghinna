@@ -35,9 +35,10 @@ namespace BookJournal.Models
         [Required]
         public required double TotalValue { get; set; }
         public double CurrentValue { get; set; }
-        
+
         [Range(0, 10)]
         public double Rating { get; set; }
+        public virtual ICollection<BookNotes> BookNotes { get; set; } = new List<BookNotes>();
 
     }
 }

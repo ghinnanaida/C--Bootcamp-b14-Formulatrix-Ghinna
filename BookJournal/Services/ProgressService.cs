@@ -12,12 +12,14 @@ namespace BookJournal.Services
     public class ProgressService : IProgressService
     {
         private readonly IProgressTrackerRepository _progressTrackerRepository;
+        private readonly IBookNoteRepository _bookNoteRepository;
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
 
-        public ProgressService(IProgressTrackerRepository progressTrackerRepository, ApplicationDbContext context, IMapper mapper)
+        public ProgressService(IProgressTrackerRepository progressTrackerRepository, IBookNoteRepository bookNoteRepository, ApplicationDbContext context, IMapper mapper)
         {
             _progressTrackerRepository = progressTrackerRepository;
+            _bookNoteRepository = bookNoteRepository;
             _context = context;
             _mapper = mapper;
         }
@@ -40,7 +42,7 @@ namespace BookJournal.Services
             return true;
         }
 
-       public async Task<bool> UpdateProgressAsync(ProgressTrackerUpdateDTO dto, int userId)
+        public async Task<bool> UpdateProgressAsync(ProgressTrackerUpdateDTO dto, int userId)
         {
             var tracker = await _context.ProgressTrackers.FirstOrDefaultAsync(t => t.Id == dto.Id && t.UserId == userId);
             if (tracker == null) return false;
@@ -91,5 +93,38 @@ namespace BookJournal.Services
                 await _context.SaveChangesAsync();
             }
         }
+        
+        public async Task<BookNoteDTO> AddNoteAsync(BookNoteCreateDTO dto, int userId)
+        {
+            // Verifikasi bahwa progress tracker ini milik user yang sedang login
+            var tracker = await _progressTrackerRepository.GetByIdAsync(dto.ProgressTrackerId);
+            if (tracker == null || tracker.UserId != userId)
+            {
+                throw new UnauthorizedAccessException("You cannot add a note to this book.");
+            }
+
+            var note = _mapper.Map<BookNotes>(dto);
+            await _bookNoteRepository.AddAsync(note);
+            await _context.SaveChangesAsync();
+
+            return _mapper.Map<BookNoteDTO>(note);
+        }
+
+        public async Task<bool> DeleteNoteAsync(int noteId, int userId)
+        {
+            var note = await _context.BookNotes
+                .Include(n => n.ProgressTracker)
+                .FirstOrDefaultAsync(n => n.Id == noteId);
+
+            if (note == null || note.ProgressTracker.UserId != userId)
+            {
+                return false; // Gagal: note tidak ditemukan atau bukan milik user
+            }
+
+            _bookNoteRepository.Remove(note);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
     }
 }

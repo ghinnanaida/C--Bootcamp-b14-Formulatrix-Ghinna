@@ -1,0 +1,18 @@
+@using BookJournal.DTOs;
+@using BookJournal.Enumerations;
+@model ProgressTrackerDTO
+
+<a asp-controller="Progress" asp-action="Details" asp-route-id="@Model.Id" class="list-group-item list-group-item-action flex-column align-items-start mb-3 border rounded">
+    <div class="d-flex w-100 justify-content-between">
+        <h5 class="mb-1">@Model.Title</h5>
+        <small>@Model.Status.ToString()</small>
+    </div>
+    <p class="mb-1">by @Model.Author</p>
+    @if (Model.Status != BookStatus.NotStarted)
+    {
+        <div class="progress mt-2 mb-2" style="height: 20px;">
+            <div class="progress-bar" role="progressbar" style="width: @Model.ProgressPercentage.ToString("0")%;" >@Model.ProgressPercentage.ToString("0")%</div>
+        </div>
+        <small>@Model.CurrentValue / @Model.TotalValue @Model.ProgressUnit.ToString()</small>
+    }
+</a>
