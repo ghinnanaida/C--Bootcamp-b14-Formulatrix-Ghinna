@@ -12,10 +12,12 @@ namespace BookJournal.Controllers
     public class BookNoteController : ControllerBase
     {
         private readonly IProgressService _progressService;
+        private readonly IUserService _userService;
 
-        public BookNoteController(IProgressService progressService)
+        public BookNoteController(IProgressService progressService, IUserService userService)
         {
             _progressService = progressService;
+            _userService = userService;
         }
 
         [HttpPost]
@@ -26,16 +28,15 @@ namespace BookJournal.Controllers
                 return BadRequest(ModelState);
             }
 
-            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userIdString))
+            var userId = _userService.GetCurrentUserId(User);
+            if (!userId.HasValue)
             {
                 return Unauthorized();
             }
 
-            var userId = int.Parse(userIdString);
             try
             {
-                var newNote = await _progressService.AddNoteAsync(dto, userId);
+                var newNote = await _progressService.AddNoteAsync(dto, userId.Value);
                 return Ok(newNote);
             }
             catch (UnauthorizedAccessException)
@@ -47,14 +48,13 @@ namespace BookJournal.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteNote(int id)
         {
-            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userIdString))
+            var userId = _userService.GetCurrentUserId(User);
+            if (!userId.HasValue)
             {
                 return Unauthorized();
             }
-            var userId = int.Parse(userIdString);
-            var success = await _progressService.DeleteNoteAsync(id, userId);
 
+            var success = await _progressService.DeleteNoteAsync(id, userId.Value);
             if (!success)
             {
                 return NotFound();

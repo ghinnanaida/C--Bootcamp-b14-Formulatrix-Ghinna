@@ -6,13 +6,17 @@
     <title>@ViewData["Title"] - BookJournal</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
-<body class="bg-light">
+<body class="d-flex flex-column min-vh-100 bg-light">
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-dark bg-primary border-bottom box-shadow mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-controller="Home" asp-action="Index">BookJournal</a>
+                <a class="navbar-brand d-flex align-items-center" asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-book-half me-2"></i>
+                    BookJournal
+                </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -20,16 +24,22 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
+                            <a class="nav-link" asp-controller="Dashboard" asp-action="Index">
+                                <i class="bi bi-speedometer2 me-1"></i>Dashboard
+                            </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Library" asp-action="Index">Library</a>
+                            <a class="nav-link" asp-controller="Library" asp-action="Index">
+                                <i class="bi bi-collection me-1"></i>Library
+                            </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Genre" asp-action="Index">Genres</a>
+                            <a class="nav-link" asp-controller="Genre" asp-action="Index">
+                                <i class="bi bi-tag me-1"></i>Genres
+                            </a>
                         </li>
                     </ul>
-                <partial name="_LoginPartial" />
+                    <partial name="_LoginPartial" />
                 </div>
             </div>
         </nav>
@@ -40,9 +50,24 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted bg-white">
+    <footer class="footer mt-auto py-3 bg-white border-top">
         <div class="container">
-            &copy; 2024 - BookJournal
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <span class="text-muted">
+                        <i class="bi bi-book me-1"></i>
+                        &copy; 2024 - BookJournal - Your Reading Journey Companion
+                    </span>
+                </div>
+                <div class="col-md-6 text-end">
+                    <a href="https://github.com/ghinnanaida" target="_blank" class="text-decoration-none text-muted me-3">
+                        <i class="bi bi-github"></i>
+                    </a>
+                    <a href="#" class="text-decoration-none text-muted me-3">
+                        <i class="bi bi-question-circle"></i>
+                    </a>
+                </div>
+            </div>
         </div>
     </footer>
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>

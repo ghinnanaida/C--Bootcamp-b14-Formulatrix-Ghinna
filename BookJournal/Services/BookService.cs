@@ -75,7 +75,7 @@ namespace BookJournal.Services
 
         public async Task<bool> IsDuplicateBookAsync(BookUpdateDTO updateDto)
         {
-            var existingBook = await _bookRepository.FindAsync(b => b.Title.ToLower() == updateDto.Title.ToLower() && b.Author.ToLower() == updateDto.Author.ToLower());
+            var existingBook = await _bookRepository.FindAsync(b => b.Title.ToLower() == updateDto.Title.ToLower() && b.Author.ToLower() == updateDto.Author.ToLower() && b.Id != updateDto.Id);
             return existingBook.Any();
         }
     }

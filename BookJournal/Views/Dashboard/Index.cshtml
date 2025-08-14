@@ -1,94 +1,171 @@
-@model DashboardDTO 
-@{
-    ViewData["Title"] = "My Dashboard";
-}
+@model DashboardDTO
 
-<div class="text-center mb-4">
-    <h1 class="display-4">@ViewData["Title"]</h1>
-</div>
+<div class="fade-in">
+    <!-- Welcome Section -->
+    <div class="bg-gradient text-blue rounded-3 p-4 mb-4 shadow-sm">
+        <div class="d-sm-flex align-items-center justify-content-between">
+            <div>
+                <h1 class="h3 mb-2">Welcome Back!</h1>
+                <p class="mb-0">Track your reading progress and manage your book collection</p>
+            </div>
+            <div class="mt-3 mt-sm-0">
+                <a asp-controller="Library" asp-action="Index" class="btn btn-light">
+                    <i class="bi bi-book me-2"></i>Browse Library
+                </a>
+            </div>
+        </div>
+    </div>
 
-<div class="row text-center mb-4">
-    <div class="col-md-3"><div class="card text-white bg-primary"><div class="card-body"><h5 class="card-title">In Progress</h5><p class="card-text fs-3">@Model.BooksInProgress</p></div></div></div>
-    <div class="col-md-3"><div class="card text-white bg-success"><div class="card-body"><h5 class="card-title">Completed</h5><p class="card-text fs-3">@Model.BooksCompleted</p></div></div></div>
-    <div class="col-md-3"><div class="card text-white bg-warning"><div class="card-body"><h5 class="card-title">On Hold</h5><p class="card-text fs-3">@Model.BooksOnHold</p></div></div></div>
-    <div class="col-md-3"><div class="card text-white bg-danger"><div class="card-body"><h5 class="card-title">Dropped</h5><p class="card-text fs-3">@Model.BooksDropped</p></div></div></div>
-</div>
-<div class="row mb-4">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-body d-flex flex-column" style="height: 40vh;">
-                <h5 class="card-title">Monthly Completions (Last 6 Months)</h5>
-                <div class="flex-grow-1" style="position: relative;">
-                    <canvas id="monthlyChart"></canvas>
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 rounded-circle mb-3" style="width: 48px; height: 48px;">
+                        <i class="bi bi-book text-primary fs-4"></i>
+                    </div>
+                    <h3 class="fw-bold mb-1">@Model.InProgressBooks.Count()</h3>
+                    <p class="text-muted mb-0">Books Being Read</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 rounded-circle mb-3" style="width: 48px; height: 48px;">
+                        <i class="bi bi-check-circle text-success fs-4"></i>
+                    </div>
+                    <h3 class="fw-bold mb-1">@Model.CompletedBooks.Count()</h3>
+                    <p class="text-muted mb-0">Books Completed</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-info bg-opacity-10 rounded-circle mb-3" style="width: 48px; height: 48px;">
+                        <i class="bi bi-hourglass text-info fs-4"></i>
+                    </div>
+                    <h3 class="fw-bold mb-1">@Model.TbrBooks.Count()</h3>
+                    <p class="text-muted mb-0">Books To Be Read</p>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-body" style="position: relative; height: 40vh;">
-                <h5 class="card-title">Last 7 Days</h5>
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        Books Completed
-                        <span class="badge bg-primary rounded-pill">@Model.BooksCompletedLastWeek</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        Pages Read
-                        <span class="badge bg-primary rounded-pill">@Model.PagesReadLastWeek</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        Books To Read
-                        <span class="badge bg-primary rounded-pill">@Model.BooksToRead</span>
-                    </li>
-                </ul>
+
+    <!-- Monthly Progress Chart -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">
+                <i class="bi bi-graph-up text-primary me-2"></i>Monthly Reading Progress
+            </h5>
+        </div>
+        <div class="card-body">
+            <div style="height: 300px;">
+                <canvas id="monthlyChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bookshelf Section -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">
+                <i class="bi bi-bookshelf text-primary me-2"></i>My Bookshelf
+            </h5>
+        </div>
+        <div class="card-body">
+            <ul class="nav nav-tabs" id="bookshelfTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="inprogress-tab" data-bs-toggle="tab" 
+                            data-bs-target="#inprogress-pane" type="button" role="tab">
+                        <i class="bi bi-book-half me-2"></i>On Read
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="tbr-tab" data-bs-toggle="tab" 
+                            data-bs-target="#tbr-pane" type="button" role="tab">
+                        <i class="bi bi-bookmark me-2"></i>To Be Read
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="completed-tab" data-bs-toggle="tab" 
+                            data-bs-target="#completed-pane" type="button" role="tab">
+                        <i class="bi bi-check-circle me-2"></i>Completed
+                    </button>
+                </li>
+            </ul>
+            <div class="tab-content pt-4" id="bookshelfTabsContent">
+                <div class="tab-pane fade show active" id="inprogress-pane" role="tabpanel">
+                    @if (!Model.InProgressBooks.Any())
+                    {
+                        <div class="text-center text-muted py-5">
+                            <i class="bi bi-book display-4 mb-3"></i>
+                            <p>You haven't started reading any books yet.</p>
+                            <a asp-controller="Library" asp-action="Index" class="btn btn-primary">
+                                <i class="bi bi-plus-circle me-2"></i>Add Books to Read
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="list-group">
+                            @foreach (var book in Model.InProgressBooks)
+                            {
+                                <partial name="_BookshelfItem" model="book" />
+                            }
+                        </div>
+                    }
+                </div>
+                <div class="tab-pane fade" id="tbr-pane" role="tabpanel">
+                    <div class="mb-3">
+                        <a asp-controller="Library" asp-action="Index" class="btn btn-primary">
+                            <i class="bi bi-plus-circle me-2"></i>Add Books from Library
+                        </a>
+                    </div>
+                    @if (!Model.TbrBooks.Any())
+                    {
+                        <div class="text-center text-muted py-5">
+                            <i class="bi bi-bookmark display-4 mb-3"></i>
+                            <p>Your reading list is empty.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="list-group">
+                            @foreach (var book in Model.TbrBooks)
+                            {
+                                <partial name="_BookshelfItem" model="book" />
+                            }
+                        </div>
+                    }
+                </div>
+                <div class="tab-pane fade" id="completed-pane" role="tabpanel">
+                    @if (!Model.CompletedBooks.Any())
+                    {
+                        <div class="text-center text-muted py-5">
+                            <i class="bi bi-check-circle display-4 mb-3"></i>
+                            <p>You haven't completed any books yet.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="list-group">
+                            @foreach (var book in Model.CompletedBooks)
+                            {
+                                <partial name="_BookshelfItem" model="book" />
+                            }
+                        </div>
+                    }
+                </div>
             </div>
         </div>
     </div>
 </div>
-
-<div class="card">
-    <div class="card-header"><h3>My Bookshelf</h3></div>
-    <div class="card-body">
-        <ul class="nav nav-tabs" id="bookshelfTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="inprogress-tab" data-bs-toggle="tab" data-bs-target="#inprogress-pane" type="button" role="tab">On Read</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="tbr-tab" data-bs-toggle="tab" data-bs-target="#tbr-pane" type="button" role="tab">To Be Read</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed-pane" type="button" role="tab">Completed</button>
-            </li>
-        </ul>
-        <div class="tab-content" id="bookshelfTabsContent">
-            <div class="tab-pane fade show active" id="inprogress-pane" role="tabpanel">
-                <div class="list-group py-3">
-                    @foreach (var book in Model.InProgressBooks) { <partial name="_BookshelfItem" model="book" /> }
-                </div>
-            </div>
-            <div class="tab-pane fade" id="tbr-pane" role="tabpanel">
-                <div class="p-3">
-                    <a asp-controller="Library" asp-action="Index" class="btn btn-primary mb-3"><i class="bi bi-plus-circle"></i> Tambah Buku dari Library</a>
-                </div>
-                <div class="list-group py-3">
-                    @foreach (var book in Model.TbrBooks) { <partial name="_BookshelfItem" model="book" /> }
-                </div>
-            </div>
-            <div class="tab-pane fade" id="completed-pane" role="tabpanel">
-                <div class="list-group py-3">
-                    @foreach (var book in Model.CompletedBooks) { <partial name="_BookshelfItem" model="book" /> }
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-
         const monthlyCtx = document.getElementById('monthlyChart');
         const monthlyData = @Html.Raw(Json.Serialize(Model.MonthlyCompletionChartData));
         new Chart(monthlyCtx, {
@@ -98,13 +175,30 @@
                 datasets: [{
                     label: 'Books Completed',
                     data: Object.values(monthlyData),
-                    backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                    backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                    borderColor: 'rgba(52, 152, 219, 1)',
+                    borderWidth: 1
                 }]
             },
             options: {
-                responsive: true, 
+                responsive: true,
                 maintainAspectRatio: false,
-                scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { 
+                            stepSize: 1,
+                            precision: 0
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    }
+                }
+            }
         });
     </script>
 }

@@ -9,22 +9,23 @@ namespace BookJournal.Controllers
     public class DashboardController : Controller
     {
         private readonly IDashboardService _dashboardService;
+        private readonly IUserService _userService;
 
-        public DashboardController(IDashboardService dashboardService)
+        public DashboardController(IDashboardService dashboardService, IUserService userService)
         {
             _dashboardService = dashboardService;
+            _userService = userService;
         }
 
         public async Task<IActionResult> Index()
         {
-            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userIdString))
+            var userId = _userService.GetCurrentUserId(User);
+            if (!userId.HasValue)
             {
                 return Unauthorized();
             }
 
-            var userId = int.Parse(userIdString);
-            var dashboardDto = await _dashboardService.GetDashboardDataAsync(userId);
+            var dashboardDto = await _dashboardService.GetDashboardDataAsync(userId.Value);
             return View(dashboardDto);
         }
     }
