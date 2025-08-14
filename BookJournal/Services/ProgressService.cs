@@ -74,6 +74,11 @@ namespace BookJournal.Services
                 tracker.Status = BookStatus.InProgress;
                 if (tracker.StartDate == null) tracker.StartDate = DateTime.UtcNow;
             }
+            if (originalStatus == BookStatus.Completed && tracker.CurrentValue < tracker.TotalValue)
+            {
+                tracker.Status = BookStatus.InProgress;
+                if (tracker.StartDate == null) tracker.StartDate = DateTime.UtcNow;
+            }
 
             await _context.SaveChangesAsync();
             var finalResult = true;

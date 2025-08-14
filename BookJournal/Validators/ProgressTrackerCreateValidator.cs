@@ -45,11 +45,6 @@ namespace BookJournal.Validators
                 .LessThanOrEqualTo(100)
                 .When(x => x.ProgressUnit == ProgressUnit.Percent)
                 .WithMessage("Total Value for Percent must be 100 or less.");
-
-            RuleFor(x => x.BookId).MustAsync(async (bookId, cancellation) => {
-                var exists = await _context.ProgressTrackers.AnyAsync(pt => pt.BookId == bookId);
-                return !exists;
-            }).WithMessage("A progress tracker for this book already exists.");
         }
     }
 }

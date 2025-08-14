@@ -49,8 +49,8 @@ namespace BookJournal.Controllers
 
             if (!success)
             {
-                ModelState.AddModelError(string.Empty, "This book is already in your journal.");
-                return View(dto); // Return the same view with validation error
+                TempData["Error"] = "This book is already in your journal.";
+                return RedirectToAction("Index", "Library");
             }
 
             return RedirectToAction("Index", "Dashboard");
