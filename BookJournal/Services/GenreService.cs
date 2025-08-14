@@ -4,6 +4,7 @@ using BookJournal.DTOs;
 using BookJournal.Models;
 using BookJournal.Repositories.Interfaces;
 using BookJournal.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace BookJournal.Services
 {
@@ -27,11 +28,20 @@ namespace BookJournal.Services
             return genreDtos;
         }
 
-        public async Task AddGenreAsync(GenreCreateDTO dto)
+        public async Task<bool> AddGenreAsync(GenreCreateDTO dto)
         {
+            var existingGenre = await _context.Genres.AnyAsync(g => g.Name.ToLower() == dto.Name.ToLower());
+
+            if (existingGenre)
+            {
+                return false; 
+            }
+
             var genre = _mapper.Map<Genre>(dto);
-            await _genreRepository.AddAsync(genre); 
+            await _genreRepository.AddAsync(genre);
             await _context.SaveChangesAsync();
+
+            return true; 
         }
 
         public async Task DeleteGenreAsync(int id)

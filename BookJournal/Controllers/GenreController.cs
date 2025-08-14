@@ -25,10 +25,19 @@ namespace BookJournal.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(GenreCreateDTO dto)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                await _genreService.AddGenreAsync(dto);
+                return BadRequest(ModelState);
             }
+
+            var success = await _genreService.AddGenreAsync(dto);
+
+            if (!success)
+            {
+                TempData["Error"] = "This genre already exists.";
+                return RedirectToAction("Index");
+            }
+
             return RedirectToAction("Index");
         }
 

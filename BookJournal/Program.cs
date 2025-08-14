@@ -31,6 +31,10 @@ builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddFluentValidationClientsideAdapters();
 builder.Services.AddValidatorsFromAssemblyContaining<BookCreateValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<BookUpdateValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<GenreCreateValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<ProgressTrackerCreateValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<ProgressTrackerUpdateValidator>();
 
 builder.Services.AddScoped<IBookRepository, BookRepository>();
 builder.Services.AddScoped<IGenreRepository, GenreRepository>();

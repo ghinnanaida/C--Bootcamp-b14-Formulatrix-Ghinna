@@ -37,17 +37,20 @@ namespace BookJournal.Controllers
             {
                 return BadRequest(ModelState);
             }
+
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userIdString))
             {
                 return Unauthorized();
             }
+
             var userId = int.Parse(userIdString);
             var success = await _progressService.AddToJournalAsync(dto, userId);
 
             if (!success)
             {
-                return BadRequest("This book is already in your journal.");
+                ModelState.AddModelError(string.Empty, "This book is already in your journal.");
+                return View(dto); // Return the same view with validation error
             }
 
             return RedirectToAction("Index", "Dashboard");

@@ -10,5 +10,7 @@ namespace BookJournal.Services.Interfaces
         Task<BookUpdateDTO?> GetBookForUpdateAsync(int id);
         Task UpdateBookAsync(BookUpdateDTO updateDto);
         Task DeleteBookAsync(int id);
+        Task<bool> IsDuplicateBookAsync(BookCreateDTO createDto);
+        Task<bool> IsDuplicateBookAsync(BookUpdateDTO createDto);
     }
 }

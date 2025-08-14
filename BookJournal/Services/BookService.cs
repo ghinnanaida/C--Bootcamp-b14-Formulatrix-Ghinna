@@ -66,5 +66,17 @@ namespace BookJournal.Services
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task<bool> IsDuplicateBookAsync(BookCreateDTO createDto)
+        {
+            var existingBook = await _bookRepository.FindAsync(b => b.Title.ToLower() == createDto.Title.ToLower() && b.Author.ToLower() == createDto.Author.ToLower());
+            return existingBook.Any();
+        }
+
+        public async Task<bool> IsDuplicateBookAsync(BookUpdateDTO updateDto)
+        {
+            var existingBook = await _bookRepository.FindAsync(b => b.Title.ToLower() == updateDto.Title.ToLower() && b.Author.ToLower() == updateDto.Author.ToLower());
+            return existingBook.Any();
+        }
     }
 }

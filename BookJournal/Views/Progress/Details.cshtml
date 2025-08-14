@@ -83,8 +83,9 @@ $(document).ready(function() {
                 $('#notesList').prepend(noteHtml);
                 $('textarea[name="Note"]').val('');
             },
-            error: function() {
-                alert('Failed to add note.');
+            error: function(xhr) {
+                var errorMessage = xhr.responseJSON?.message || 'Failed to add note.';
+                alert(errorMessage);
             }
         });
     });

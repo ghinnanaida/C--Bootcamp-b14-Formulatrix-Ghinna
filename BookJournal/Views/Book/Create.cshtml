@@ -7,6 +7,14 @@
 <h1>@ViewData["Title"]</h1>
 <h4>Create a new book to add to the main library.</h4>
 <hr />
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @TempData["Error"]
+    </div>
+}
+
 <div class="row">
     <div class="col-md-6">
         <form asp-controller="Book" asp-action="Create" method="post">

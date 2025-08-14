@@ -30,6 +30,15 @@ namespace BookJournal.Controllers
                 ViewBag.AllGenres = await _bookService.GetAllGenresAsync();
                 return View(createDto);
             }
+
+            var isDuplicate = await _bookService.IsDuplicateBookAsync(createDto);
+            if (isDuplicate)
+            {
+                TempData["Error"] = "A book with the same title and author already exists.";
+                ViewBag.AllGenres = await _bookService.GetAllGenresAsync();
+                return View(createDto);
+            }
+
             await _bookService.CreateBookAsync(createDto);
             return RedirectToAction("Index", "Library");
         }
@@ -49,6 +58,14 @@ namespace BookJournal.Controllers
         {
             if (!ModelState.IsValid)
             {
+                ViewBag.AllGenres = await _bookService.GetAllGenresAsync();
+                return View(updateDto);
+            }
+
+            var isDuplicate = await _bookService.IsDuplicateBookAsync(updateDto);
+            if (isDuplicate)
+            {
+                TempData["Error"] = "A book with the same title and author already exists.";
                 ViewBag.AllGenres = await _bookService.GetAllGenresAsync();
                 return View(updateDto);
             }

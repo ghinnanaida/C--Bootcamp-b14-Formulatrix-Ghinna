@@ -1,14 +1,20 @@
 using System.Data;
 using BookJournal.DTOs;
 using BookJournal.Enumerations;
+using BookJournal.Data;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 
 namespace BookJournal.Validators
 {
     public class ProgressTrackerCreateValidator : AbstractValidator<ProgressTrackerCreateDTO>
     {
-        public ProgressTrackerCreateValidator()
+        private readonly ApplicationDbContext _context;
+
+        public ProgressTrackerCreateValidator(ApplicationDbContext context)
         {
+            _context = context;
+
             RuleFor(x => x.BookId).GreaterThan(0);
             RuleFor(x => x.Status).IsInEnum();
             RuleFor(x => x.BookType).IsInEnum();
@@ -39,6 +45,11 @@ namespace BookJournal.Validators
                 .LessThanOrEqualTo(100)
                 .When(x => x.ProgressUnit == ProgressUnit.Percent)
                 .WithMessage("Total Value for Percent must be 100 or less.");
+
+            RuleFor(x => x.BookId).MustAsync(async (bookId, cancellation) => {
+                var exists = await _context.ProgressTrackers.AnyAsync(pt => pt.BookId == bookId);
+                return !exists;
+            }).WithMessage("A progress tracker for this book already exists.");
         }
     }
 }

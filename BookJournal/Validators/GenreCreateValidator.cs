@@ -7,7 +7,7 @@ namespace BookJournal.Validators
     {
         public GenreCreateValidator()
         {
-            RuleFor(x => x.Name).NotEmpty().MaximumLength(100);
+            RuleFor(x => x.Name).NotEmpty().MaximumLength(100).Must(name => name.ToLower() == name.ToLower()).WithMessage("Genre name must be case-insensitively unique.");
         }
     }
 }
