@@ -105,7 +105,7 @@ namespace BookJournal.Controllers
 
             var userRoles = await _userService.GetRolesAsync(user);
             ViewBag.UserRoles = userRoles;
-            ViewBag.AllRoles = new[] { "User", "Admin" }; // You might want to get this from a role service
+            ViewBag.AllRoles = new[] { "User", "Admin" }; 
 
             return View(user);
         }
@@ -123,7 +123,6 @@ namespace BookJournal.Controllers
 
             var userRoles = await _userService.GetRolesAsync(user);
             
-            // Remove roles that are not in the new roles list
             foreach (var role in userRoles)
             {
                 if (!roles.Contains(role))
@@ -132,7 +131,6 @@ namespace BookJournal.Controllers
                 }
             }
 
-            // Add new roles
             foreach (var role in roles)
             {
                 if (!await _userService.IsInRoleAsync(user, role))

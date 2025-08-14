@@ -87,13 +87,11 @@
 @section Scripts {
     <script>
         $(document).ready(function () {
-            // Initialize tooltips
             var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
             var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
                 return new bootstrap.Tooltip(tooltipTriggerEl);
             });
 
-            // Delete button hover effect
             $('.delete-btn').hover(
                 function() {
                     $(this).removeClass('btn-outline-danger').addClass('btn-danger');
@@ -103,7 +101,6 @@
                 }
             );
 
-            // Add animation to alerts
             $('.alert').addClass('fade-in');
         });
     </script>

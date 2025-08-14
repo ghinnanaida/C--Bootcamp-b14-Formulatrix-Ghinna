@@ -324,17 +324,14 @@
 @section Scripts {
 <script>
 $(document).ready(function() {
-    // Initialize tooltips
     $('[data-bs-toggle="tooltip"]').tooltip();
 
-    // Add note form handling
     $('#addNoteForm').on('submit', function(e) {
         e.preventDefault();
         var formData = {
             ProgressTrackerId: parseInt($('input[name="ProgressTrackerId"]').val()),
             Note: $('textarea[name="Note"]').val()
         };
-        // Disable submit button during request
         var submitBtn = $(this).find('button[type="submit"]');
         var originalText = submitBtn.html();
         submitBtn.prop('disabled', true).html('<i class="bi bi-hourglass me-2"></i>Saving...');
@@ -369,15 +366,11 @@ $(document).ready(function() {
                             </div>
                         </div>
                     </div>`;
-                // Remove empty state if it exists
                 $('.empty-notes').remove();
-                // Add new note with animation
                 $('#notesList').prepend(noteHtml);
                 $('.new-note').hide().slideDown(300);
                 
-                // Clear form
                 $('textarea[name="Note"]').val('');
-                // Show success message
                 showToast('Note added successfully!', 'success');
             },
             error: function(xhr) {
@@ -385,13 +378,11 @@ $(document).ready(function() {
                 showToast(errorMessage, 'error');
             },
             complete: function() {
-                // Re-enable submit button
                 submitBtn.prop('disabled', false).html(originalText);
             }
         });
     });
 
-    // Delete note handling
     $('#notesList').on('click', '.delete-note-btn', function() {
         var noteId = $(this).data('note-id');
         var noteElement = $('#note-' + noteId);
@@ -404,7 +395,6 @@ $(document).ready(function() {
                     noteElement.slideUp(300, function() {
                         $(this).remove();
                         
-                        // Show empty state if no notes left
                         if ($('#notesList .note-item').length === 0) {
                             $('#notesList').html(`
                                 <div class="empty-notes text-center py-4">
@@ -423,7 +413,6 @@ $(document).ready(function() {
         }
     });
 
-    // Toast notification function
     function showToast(message, type) {
         var toastClass = type === 'success' ? 'bg-success' : 'bg-danger';
         var icon = type === 'success' ? 'bi-check-circle' : 'bi-exclamation-triangle';
@@ -442,13 +431,11 @@ $(document).ready(function() {
         var bsToast = new bootstrap.Toast(toast[0]);
         bsToast.show();
         
-        // Remove toast element after it's hidden
         toast.on('hidden.bs.toast', function() {
             $(this).remove();
         });
     }
 
-    // Add smooth animations
     $('.card').addClass('animate-fade-in');
 });
 </script>

@@ -59,19 +59,16 @@ namespace BookJournal.Services
 
             var originalStatus = tracker.Status;
             
-            // Preserve existing values that shouldn't be updated
             var bookType = tracker.BookType;
             var progressUnit = tracker.ProgressUnit;
             var totalValue = tracker.TotalValue;
 
             _mapper.Map(dto, tracker);
 
-            // Restore preserved values
             tracker.BookType = bookType;
             tracker.ProgressUnit = progressUnit;
             tracker.TotalValue = totalValue;
 
-            // Handle status changes
             if (tracker.CurrentValue >= tracker.TotalValue)
             {
                 tracker.CurrentValue = tracker.TotalValue;
@@ -97,7 +94,6 @@ namespace BookJournal.Services
                 tracker.Status = BookStatus.InProgress;
             }
 
-            // Update LastStatusChangeDate if status changed
             if (originalStatus != tracker.Status)
             {
                 tracker.LastStatusChangeDate = DateTime.UtcNow;
