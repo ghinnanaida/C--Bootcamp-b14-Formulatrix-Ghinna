@@ -19,7 +19,8 @@ namespace BookJournal.Services
         public async Task<IEnumerable<BookDTO>> GetAllBooksAsync()
         {
             var books = await _bookRepository.GetAllAsync();
-            return _mapper.Map<IEnumerable<BookDTO>>(books);
+            var bookDtos = _mapper.Map<IEnumerable<BookDTO>>(books);
+            return bookDtos;
         }
     }
 }

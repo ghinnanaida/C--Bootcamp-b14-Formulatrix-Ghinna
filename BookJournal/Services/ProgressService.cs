@@ -31,7 +31,8 @@ namespace BookJournal.Services
 
             if (existingTracker.Any())
             {
-                return false;
+                var result = false;
+                return result; ;
             }
 
             var progressTracker = _mapper.Map<ProgressTracker>(dto);
@@ -44,13 +45,18 @@ namespace BookJournal.Services
             }
             await _progressTrackerRepository.AddAsync(progressTracker);
             await _context.SaveChangesAsync(); 
-            return true;
+            var finalResult = true;
+            return finalResult;
         }
 
         public async Task<bool> UpdateProgressAsync(ProgressTrackerUpdateDTO dto, int userId)
         {
             var tracker = await _context.ProgressTrackers.FirstOrDefaultAsync(t => t.Id == dto.Id && t.UserId == userId);
-            if (tracker == null) return false;
+            if (tracker == null)
+            {
+                var result = false;
+                return result; ;
+            }
             var originalStatus = tracker.Status;
             _mapper.Map(dto, tracker);
 
@@ -70,7 +76,8 @@ namespace BookJournal.Services
             }
 
             await _context.SaveChangesAsync();
-            return true;
+            var finalResult = true;
+            return finalResult;
         }
 
 
@@ -107,7 +114,6 @@ namespace BookJournal.Services
         
         public async Task<BookNoteDTO> AddNoteAsync(BookNoteCreateDTO dto, int userId)
         {
-            // Verifikasi bahwa progress tracker ini milik user yang sedang login
             var tracker = await _progressTrackerRepository.GetByIdAsync(dto.ProgressTrackerId);
             if (tracker == null || tracker.UserId != userId)
             {
@@ -129,7 +135,7 @@ namespace BookJournal.Services
 
             if (note == null || note.ProgressTracker.UserId != userId)
             {
-                return false; // Gagal: note tidak ditemukan atau bukan milik user
+                return false; 
             }
 
             _bookNoteRepository.Remove(note);

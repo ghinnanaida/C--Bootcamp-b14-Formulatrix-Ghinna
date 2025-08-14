@@ -22,17 +22,22 @@ namespace BookJournal.Repositories
 
         public async Task<IEnumerable<Book>> FindAsync(Expression<Func<Book, bool>> predicate)
         {
-            return await _context.Books.Where(predicate).ToListAsync();
+            var result = await _context.Books.Where(predicate).ToListAsync();
+            return result;
         }
 
         public async Task<IEnumerable<Book>> GetAllAsync()
         {
-            return await _context.Books.Include(b => b.Genres).OrderBy(b => b.Title).ToListAsync();
+            var books = await _context.Books.Include(b => b.Genres).ToListAsync();
+            return books;
         }
 
         public async Task<Book?> GetByIdAsync(int id)
         {
-            return await _context.Books.Include(b => b.Genres).FirstOrDefaultAsync(b => b.Id == id);
+            var book = await _context.Books
+                .Include(b => b.Genres)
+                .FirstOrDefaultAsync(b => b.Id == id);
+            return book;
         }
 
         public void Remove(Book entity)

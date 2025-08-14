@@ -21,17 +21,20 @@ namespace BookJournal.Repositories
 
         public async Task<IEnumerable<Genre>> GetAllAsync()
         {
-            return await _context.Genres.OrderBy(g => g.Name).ToListAsync();
+            var genres = await _context.Genres.OrderBy(g => g.Name).ToListAsync();
+            return genres;
         }
 
         public async Task<Genre?> GetByIdAsync(int id)
         {
-            return await _context.Genres.FindAsync(id);
+            var genre = await _context.Genres.FindAsync(id);
+            return genre;
         }
 
         public async Task<ICollection<Genre>> GetGenresByIdsAsync(IEnumerable<int> ids)
         {
-            return await _context.Genres.Where(g => ids.Contains(g.Id)).ToListAsync();
+            var genres = await _context.Genres.Where(g => ids.Contains(g.Id)).ToListAsync();
+            return genres;
         }
 
         public void Remove(Genre entity)

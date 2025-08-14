@@ -26,7 +26,8 @@ namespace BookJournal.Services
         public async Task<IEnumerable<GenreDTO>> GetAllGenresAsync()
         {
             var genres = await _genreRepository.GetAllAsync();
-            return _mapper.Map<IEnumerable<GenreDTO>>(genres);
+            var genreDtos = _mapper.Map<IEnumerable<GenreDTO>>(genres);
+            return genreDtos;
         }
 
         public async Task CreateBookAsync(BookCreateDTO createDto)
@@ -40,7 +41,8 @@ namespace BookJournal.Services
         public async Task<BookUpdateDTO?> GetBookForUpdateAsync(int id)
         {
             var book = await _bookRepository.GetByIdAsync(id);
-            return book == null ? null : _mapper.Map<BookUpdateDTO>(book);
+            var result = book == null ? null : _mapper.Map<BookUpdateDTO>(book);
+            return result;
         }
 
         public async Task UpdateBookAsync(BookUpdateDTO updateDto)

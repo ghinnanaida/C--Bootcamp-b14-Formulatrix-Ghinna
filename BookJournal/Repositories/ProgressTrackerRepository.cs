@@ -22,36 +22,41 @@ namespace BookJournal.Repositories
 
         public async Task<IEnumerable<ProgressTracker>> FindAsync(Expression<Func<ProgressTracker, bool>> predicate)
         {
-            return await _context.ProgressTrackers.Where(predicate).ToListAsync();
+            var result = await _context.ProgressTrackers.Where(predicate).ToListAsync();
+            return result;
         }
 
         public async Task<IEnumerable<ProgressTracker>> GetAllAsync()
         {
-            return await _context.ProgressTrackers.ToListAsync();
+            var trackers = await _context.ProgressTrackers.ToListAsync();
+            return trackers;
         }
 
         public async Task<ProgressTracker?> GetByIdAsync(int id)
         {
-            return await _context.ProgressTrackers.FindAsync(id);
+            var tracker = await _context.ProgressTrackers.FindAsync(id);
+            return tracker;
         }
 
         public async Task<IEnumerable<ProgressTracker>> GetTrackersForUserAsync(int userId)
         {
-            return await _context.ProgressTrackers
+            var trackers = await _context.ProgressTrackers
                 .Include(pt => pt.Book)
                     .ThenInclude(b => b.Genres)
                 .Where(pt => pt.UserId == userId)
                 .OrderByDescending(pt => pt.LastStatusChangeDate)
                 .ToListAsync();
+            return trackers;
         }
 
         public async Task<ProgressTracker?> GetTrackerWithDetailsAsync(int progressTrackerId, int userId)
         {
-            return await _context.ProgressTrackers
+            var tracker = await _context.ProgressTrackers
                 .Include(pt => pt.Book)
                     .ThenInclude(b => b.Genres)
                 .Where(pt => pt.UserId == userId)
                 .FirstOrDefaultAsync(pt => pt.Id == progressTrackerId);
+            return tracker;
         }
 
         public void Remove(ProgressTracker entity)

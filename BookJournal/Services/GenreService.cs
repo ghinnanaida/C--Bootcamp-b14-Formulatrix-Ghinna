@@ -23,13 +23,14 @@ namespace BookJournal.Services
         public async Task<IEnumerable<GenreDTO>> GetAllGenresAsync()
         {
             var genres = await _genreRepository.GetAllAsync();
-            return _mapper.Map<IEnumerable<GenreDTO>>(genres);
+            var genreDtos = _mapper.Map<IEnumerable<GenreDTO>>(genres);
+            return genreDtos;
         }
 
         public async Task AddGenreAsync(GenreCreateDTO dto)
         {
             var genre = _mapper.Map<Genre>(dto);
-            await _genreRepository.AddAsync(genre); // Use repository to add
+            await _genreRepository.AddAsync(genre); 
             await _context.SaveChangesAsync();
         }
 
@@ -38,7 +39,7 @@ namespace BookJournal.Services
             var genre = await _genreRepository.GetByIdAsync(id);
             if (genre != null)
             {
-                _genreRepository.Remove(genre); // Use repository to remove
+                _genreRepository.Remove(genre); 
                 await _context.SaveChangesAsync();
             }
         }

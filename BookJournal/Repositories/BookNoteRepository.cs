@@ -20,7 +20,8 @@ namespace BookJournal.Repositories
 
         public async Task<BookNotes?> GetByIdAsync(int id)
         {
-            return await _context.BookNotes.FindAsync(id);
+            var note = await _context.BookNotes.FindAsync(id);
+            return note;
         }
 
         public void Remove(BookNotes entity)
