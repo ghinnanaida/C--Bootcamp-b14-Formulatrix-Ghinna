@@ -29,5 +29,8 @@ namespace BookJournal.DTOs
         [Display(Name = "Your Rating (0-10)")]
         [Range(0, 10)]
         public double Rating { get; set; } 
+        
+        [Display(Name = "Current Progress")]
+        public double CurrentValue { get; set; }
     }
 }

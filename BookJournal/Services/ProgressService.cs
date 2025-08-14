@@ -37,8 +37,13 @@ namespace BookJournal.Services
             var progressTracker = _mapper.Map<ProgressTracker>(dto);
             progressTracker.UserId = userId;
 
+            if (dto.Status == BookStatus.Completed)
+            {
+                progressTracker.CurrentValue = dto.TotalValue;
+                if (dto.EndDate == null) progressTracker.EndDate = DateTime.UtcNow;
+            }
             await _progressTrackerRepository.AddAsync(progressTracker);
-            await _context.SaveChangesAsync(); // Save changes here
+            await _context.SaveChangesAsync(); 
             return true;
         }
 
@@ -46,16 +51,22 @@ namespace BookJournal.Services
         {
             var tracker = await _context.ProgressTrackers.FirstOrDefaultAsync(t => t.Id == dto.Id && t.UserId == userId);
             if (tracker == null) return false;
-
+            var originalStatus = tracker.Status;
             _mapper.Map(dto, tracker);
 
             if (tracker.CurrentValue >= tracker.TotalValue)
             {
+                tracker.CurrentValue = tracker.TotalValue;
                 tracker.Status = BookStatus.Completed;
                 if (tracker.EndDate == null)
                 {
                     tracker.EndDate = DateTime.UtcNow;
                 }
+            }
+            if (originalStatus == BookStatus.NotStarted && tracker.CurrentValue > 0)
+            {
+                tracker.Status = BookStatus.InProgress;
+                if (tracker.StartDate == null) tracker.StartDate = DateTime.UtcNow;
             }
 
             await _context.SaveChangesAsync();

@@ -1,3 +1,4 @@
+using System.Data;
 using BookJournal.DTOs;
 using BookJournal.Enumerations;
 using FluentValidation;
@@ -13,6 +14,10 @@ namespace BookJournal.Validators
             RuleFor(x => x.BookType).IsInEnum();
             RuleFor(x => x.ProgressUnit).IsInEnum();
             RuleFor(x => x.TotalValue).GreaterThan(0);
+            RuleFor(x => x.CurrentValue)
+                .GreaterThanOrEqualTo(0)
+                .LessThanOrEqualTo(x => x.TotalValue)
+                .WithMessage("Current Value must be less than or equal to Total Value.");
             RuleFor(x => x.Rating).InclusiveBetween(0, 10);
 
             RuleFor(x => x.ProgressUnit)

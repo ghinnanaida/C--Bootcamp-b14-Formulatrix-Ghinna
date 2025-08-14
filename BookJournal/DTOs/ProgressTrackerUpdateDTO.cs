@@ -23,5 +23,8 @@ namespace BookJournal.DTOs
 
         [Display(Name = "End Date")]
         public DateTime? EndDate { get; set; }
+        
+        [Display(Name = "Total (Pages/Percent/Episodes)")]
+        public double TotalValue { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 using BookJournal.DTOs;
+using BookJournal.Enumerations;
 using FluentValidation;
 
 namespace BookJournal.Validators
@@ -11,6 +12,11 @@ namespace BookJournal.Validators
             RuleFor(x => x.CurrentValue).GreaterThanOrEqualTo(0);
             RuleFor(x => x.Status).IsInEnum();
             RuleFor(x => x.Rating).InclusiveBetween(0, 10);
+
+            RuleFor(x => x.CurrentValue)
+                .LessThanOrEqualTo(x => x.TotalValue)
+                .WithMessage("Progres saat ini tidak boleh melebihi total nilai.");
+
         }
     }
 }
