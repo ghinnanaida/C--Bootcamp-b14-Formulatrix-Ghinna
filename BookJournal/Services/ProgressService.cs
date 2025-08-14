@@ -54,35 +54,57 @@ namespace BookJournal.Services
             var tracker = await _context.ProgressTrackers.FirstOrDefaultAsync(t => t.Id == dto.Id && t.UserId == userId);
             if (tracker == null)
             {
-                var result = false;
-                return result; ;
+                return false;
             }
+
             var originalStatus = tracker.Status;
+            
+            // Preserve existing values that shouldn't be updated
+            var bookType = tracker.BookType;
+            var progressUnit = tracker.ProgressUnit;
+            var totalValue = tracker.TotalValue;
+
             _mapper.Map(dto, tracker);
 
+            // Restore preserved values
+            tracker.BookType = bookType;
+            tracker.ProgressUnit = progressUnit;
+            tracker.TotalValue = totalValue;
+
+            // Handle status changes
             if (tracker.CurrentValue >= tracker.TotalValue)
             {
                 tracker.CurrentValue = tracker.TotalValue;
-                tracker.Status = BookStatus.Completed;
-                if (tracker.EndDate == null)
+                if (tracker.Status != BookStatus.Completed)
                 {
-                    tracker.EndDate = DateTime.UtcNow;
+                    tracker.Status = BookStatus.Completed;
+                    if (tracker.EndDate == null)
+                    {
+                        tracker.EndDate = DateTime.UtcNow;
+                    }
                 }
             }
-            if (originalStatus == BookStatus.NotStarted && tracker.CurrentValue > 0)
+            else if (originalStatus == BookStatus.NotStarted && tracker.CurrentValue > 0)
             {
                 tracker.Status = BookStatus.InProgress;
-                if (tracker.StartDate == null) tracker.StartDate = DateTime.UtcNow;
+                if (tracker.StartDate == null)
+                {
+                    tracker.StartDate = DateTime.UtcNow;
+                }
             }
-            if (originalStatus == BookStatus.Completed && tracker.CurrentValue < tracker.TotalValue)
+            else if (originalStatus == BookStatus.Completed && tracker.CurrentValue < tracker.TotalValue)
             {
                 tracker.Status = BookStatus.InProgress;
-                if (tracker.StartDate == null) tracker.StartDate = DateTime.UtcNow;
+            }
+
+            // Update LastStatusChangeDate if status changed
+            if (originalStatus != tracker.Status)
+            {
+                tracker.LastStatusChangeDate = DateTime.UtcNow;
             }
 
             await _context.SaveChangesAsync();
-            var finalResult = true;
-            return finalResult;
+            return true;
         }
 
 

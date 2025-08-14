@@ -57,7 +57,17 @@
     </div>
 </div>
 
-@await Html.PartialAsync("_UpdateProgressTrackerModal", new ProgressTrackerUpdateDTO { Id = Model.Tracker.Id, CurrentValue = Model.Tracker.CurrentValue, Rating = Model.Tracker.Rating, Status = Model.Tracker.Status, StartDate = Model.Tracker.StartDate, EndDate = Model.Tracker.EndDate })
+@await Html.PartialAsync("_UpdateProgressTrackerModal", new ProgressTrackerUpdateDTO 
+{ 
+    Id = Model.Tracker.Id, 
+    CurrentValue = Model.Tracker.CurrentValue, 
+    TotalValue = Model.Tracker.TotalValue,
+    Rating = Model.Tracker.Rating, 
+    Status = Model.Tracker.Status, 
+    StartDate = Model.Tracker.StartDate, 
+    EndDate = Model.Tracker.EndDate 
+})
+
 @section Scripts {
 <script>
 $(document).ready(function() {
