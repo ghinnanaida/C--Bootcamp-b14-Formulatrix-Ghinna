@@ -30,11 +30,6 @@ namespace BookJournal.Services
                 .Where(t => t.ProgressUnit == ProgressUnit.Pages && t.LastStatusChangeDate >= sevenDaysAgo)
                 .Sum(t => t.CurrentValue); 
 
-            var genreChartData = validTrackers
-                .SelectMany(t => t.Book.Genres)
-                .GroupBy(g => g.Name)
-                .ToDictionary(g => g.Key, g => g.Count());
-
             var sixMonthsAgo = DateTime.UtcNow.AddMonths(-6);
             var monthlyCompletionData = validTrackers
                 .Where(t => t.Status == BookStatus.Completed && t.EndDate >= sixMonthsAgo)
@@ -54,10 +49,10 @@ namespace BookJournal.Services
                 BooksCompleted = validTrackers.Count(t => t.Status == BookStatus.Completed),
                 BooksOnHold = validTrackers.Count(t => t.Status == BookStatus.OnHold),
                 BooksDropped = validTrackers.Count(t => t.Status == BookStatus.Dropped),
+                BooksToRead = validTrackers.Count(t => t.Status == BookStatus.NotStarted),
                 AllBooks = _mapper.Map<IEnumerable<ProgressTrackerDTO>>(validTrackers),
                 BooksCompletedLastWeek = completedLastWeek.Count(),
                 PagesReadLastWeek = pagesReadLastWeek,
-                GenreChartData = genreChartData,
                 TbrBooks = _mapper.Map<IEnumerable<ProgressTrackerDTO>>(validTrackers.Where(t => t.Status == BookStatus.NotStarted)),
                 InProgressBooks = _mapper.Map<IEnumerable<ProgressTrackerDTO>>(validTrackers.Where(t => t.Status == BookStatus.InProgress || t.Status == BookStatus.OnHold)),
                 CompletedBooks = _mapper.Map<IEnumerable<ProgressTrackerDTO>>(validTrackers.Where(t => t.Status == BookStatus.Completed || t.Status == BookStatus.Dropped)),
