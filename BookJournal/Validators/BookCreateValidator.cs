@@ -16,10 +16,6 @@ namespace BookJournal.Validators
                 .NotEmpty()
                 .MaximumLength(100)
                 .WithMessage("Author is required and must not exceed 100 characters.");
-
-            RuleFor(x => new { x.Title, x.Author })
-                .Must(x => x.Title.ToLower() != x.Author.ToLower())
-                .WithMessage("Title and Author cannot be the same.");
             
             RuleFor(x => x.GenreIds).NotEmpty().WithMessage("Please select at least one genre.");
             

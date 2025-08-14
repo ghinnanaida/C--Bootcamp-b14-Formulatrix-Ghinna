@@ -3,6 +3,8 @@
     ViewData["Title"] = "Manage Genres";
 }
 
+<h1>@ViewData["Title"]</h1>
+
 @if (TempData["Error"] != null)
 {
     <div class="alert alert-danger" role="alert">
@@ -10,7 +12,6 @@
     </div>
 }
 
-<h1>@ViewData["Title"]</h1>
 <div class="row">
     <div class="col-md-6">
         <h3>Existing Genres</h3>

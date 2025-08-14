@@ -27,7 +27,8 @@ namespace BookJournal.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                TempData["Error"] = "Genre name is required and must not exceed 100 characters.";
+                return RedirectToAction("Index");
             }
 
             var success = await _genreService.AddGenreAsync(dto);

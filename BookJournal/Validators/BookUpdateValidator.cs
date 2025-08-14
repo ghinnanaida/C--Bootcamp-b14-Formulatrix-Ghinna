@@ -8,13 +8,17 @@ namespace BookJournal.Validators
         public BookUpdateValidator()
         {
             RuleFor(x => x.Id).NotEmpty();
-            RuleFor(x => x.Title).NotEmpty().MaximumLength(200).Must(title => title.ToLower() == title.ToLower()).WithMessage("Book title must be case-insensitively unique.");
-            RuleFor(x => x.Author).NotEmpty().MaximumLength(100);
-            RuleFor(x => x.GenreIds).NotEmpty().WithMessage("Please select at least one genre.");
+            RuleFor(x => x.Title)
+                .NotEmpty()
+                .MaximumLength(200)
+                .WithMessage("Title is required and must not exceed 200 characters.");
 
-            RuleFor(x => new { x.Title, x.Author })
-                .Must(x => x.Title.ToLower() != x.Author.ToLower())
-                .WithMessage("Title and Author cannot be the same.");
+            RuleFor(x => x.Author)
+                .NotEmpty()
+                .MaximumLength(100)
+                .WithMessage("Author is required and must not exceed 100 characters.");
+
+            RuleFor(x => x.GenreIds).NotEmpty().WithMessage("Please select at least one genre.");
         }
     }
 }
