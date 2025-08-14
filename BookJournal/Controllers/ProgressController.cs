@@ -35,7 +35,11 @@ namespace BookJournal.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage);
+                TempData["Error"] = string.Join(", ", errors);
+                return RedirectToAction("Index", "Library");
             }
 
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -53,6 +57,7 @@ namespace BookJournal.Controllers
                 return RedirectToAction("Index", "Library");
             }
 
+            TempData["Success"] = "Book successfully added to your journal.";
             return RedirectToAction("Index", "Dashboard");
         }
 
@@ -62,7 +67,11 @@ namespace BookJournal.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage);
+                TempData["Error"] = string.Join(", ", errors);
+                return RedirectToAction("Details", new { id = dto.Id });
             }
 
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -70,15 +79,18 @@ namespace BookJournal.Controllers
             {
                 return Unauthorized();
             }
+
             var userId = int.Parse(userIdString);
             var success = await _progressService.UpdateProgressAsync(dto, userId);
 
             if (!success)
             {
-                return NotFound();
+                TempData["Error"] = "Could not find the progress tracker to update.";
+                return RedirectToAction("Details", new { id = dto.Id });
             }
 
-            return RedirectToAction("Index", "Dashboard");
+            TempData["Success"] = "Progress successfully updated.";
+            return RedirectToAction("Details", new { id = dto.Id });
         }
 
         [HttpPost]
@@ -92,6 +104,7 @@ namespace BookJournal.Controllers
             }
             var userId = int.Parse(userIdString);
             await _progressService.DeleteProgressAsync(id, userId);
+            TempData["Success"] = "Progress tracker successfully deleted.";
             return RedirectToAction("Index", "Dashboard");
         }
     }
